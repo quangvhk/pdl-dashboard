@@ -2,17 +2,18 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/login', '/register']
+const PUBLIC_ROUTES = ['/', '/login', '/register']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const authStatus = request.cookies.get('auth-status')?.value
-  const isAuthenticated = authStatus === 'authenticated'
+  const hasAccessToken = request.cookies.has('accessToken')
+  const hasRefreshToken = request.cookies.has('refreshToken')
+  const isAuthenticated = hasAccessToken || hasRefreshToken
 
   // Allow public routes
-  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
-    // Redirect authenticated users away from login/register
-    if (isAuthenticated) {
+  if (PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(route + '/'))) {
+    // Redirect authenticated users away from login/register to dashboard
+    if (isAuthenticated && (pathname === '/login' || pathname === '/register')) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     return NextResponse.next()

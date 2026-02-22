@@ -8,7 +8,8 @@ export type {
 export type {
   AuthUser,
   AuthResponse,
-  TokensResponse,
+  RefreshResponse,
+  LogoutResponse,
   LoginRequest,
   RegisterRequest,
 } from './auth'

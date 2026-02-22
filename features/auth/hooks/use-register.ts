@@ -12,7 +12,7 @@ import type { RegisterRequest } from '@/types'
  * Mutation hook for new user registration.
  *
  * On success:
- * - Stores tokens + user in auth store (sets auth-status cookie)
+ * - Stores user in auth store (tokens set in HttpOnly cookies by backend)
  * - Stores tenant context in tenant store
  * - Redirects to /dashboard
  */
@@ -24,8 +24,8 @@ export function useRegister() {
   return useMutation({
     mutationFn: (data: RegisterRequest) => authService.register(data),
     onSuccess: (response) => {
-      // Persist tokens + user; sets auth-status cookie
-      login(response)
+      // Store user (tokens set in HttpOnly cookies by backend)
+      login(response.user)
 
       // Persist tenant context derived from the registered user
       setTenant(

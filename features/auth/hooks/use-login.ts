@@ -24,8 +24,8 @@ export function useLogin(callbackUrl = '/dashboard') {
   return useMutation({
     mutationFn: (data: LoginRequest) => authService.login(data),
     onSuccess: (response) => {
-      // Persist tokens + user; sets auth-status cookie
-      login(response)
+      // Store user (tokens set in HttpOnly cookies by backend)
+      login(response.user)
 
       // Persist tenant context derived from the authenticated user
       setTenant(

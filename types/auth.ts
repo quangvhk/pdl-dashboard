@@ -9,14 +9,15 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
   user: AuthUser
 }
 
-export interface TokensResponse {
-  accessToken: string
-  refreshToken: string
+export interface RefreshResponse {
+  success: boolean
+}
+
+export interface LogoutResponse {
+  success: boolean
 }
 
 export interface LoginRequest {

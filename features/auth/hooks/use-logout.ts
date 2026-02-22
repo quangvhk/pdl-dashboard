@@ -11,8 +11,8 @@ import { useTenantStore } from '@/stores/tenant.store'
  * Mutation hook for user logout.
  *
  * On success (or failure — always clears local state):
- * - Calls server logout endpoint to invalidate the session
- * - Clears auth store (tokens, user, cookie)
+ * - Calls server logout endpoint to clear HttpOnly cookies
+ * - Clears auth store (user)
  * - Clears tenant store
  * - Clears all React Query cache
  * - Redirects to /login

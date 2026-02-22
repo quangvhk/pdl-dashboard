@@ -1,30 +1,35 @@
 'use client'
 
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth.store'
 import { authService } from '@/lib/api/services/auth.service'
 
+// Routes that don't require authentication check
+const PUBLIC_ROUTES = ['/', '/login', '/register']
+
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const { refreshToken, setTokens, setUser, logout, setInitialized, isInitialized } =
-    useAuthStore()
+  const pathname = usePathname()
+  const { setUser, logout, setInitialized, isInitialized } = useAuthStore()
 
   useEffect(() => {
     async function initialize() {
-      if (!refreshToken) {
+      // Skip auth check on public routes
+      const isPublicRoute = PUBLIC_ROUTES.some(
+        (route) => pathname === route || pathname.startsWith(route + '/')
+      )
+
+      if (isPublicRoute) {
         setInitialized(true)
         return
       }
 
       try {
-        // Attempt silent token refresh using persisted refresh token
-        const tokens = await authService.refresh(refreshToken)
-        setTokens(tokens.accessToken, tokens.refreshToken)
-
-        // Fetch current user profile
+        // Fetch current user profile (cookies sent automatically)
         const user = await authService.getMe()
         setUser(user)
       } catch {
-        // Refresh failed — session expired, clear auth state and cookie
+        // Not authenticated or session expired
         logout()
       } finally {
         setInitialized(true)
@@ -32,7 +37,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     }
 
     initialize()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isInitialized) {
     return (

@@ -5,32 +5,32 @@
 
 import { apiClient } from '../client'
 import { ENDPOINTS } from '../endpoints'
-import type { AuthResponse, AuthUser, LoginRequest, RegisterRequest, TokensResponse } from '@/types'
+import type { AuthResponse, AuthUser, LoginRequest, RegisterRequest, RefreshResponse, LogoutResponse } from '@/types'
 
 export const authService = {
   /**
-   * Authenticate a user and receive access + refresh tokens.
+   * Authenticate a user (tokens set in HttpOnly cookies by backend).
    */
   login: (data: LoginRequest): Promise<AuthResponse> =>
     apiClient.post<AuthResponse>(ENDPOINTS.auth.login, data),
 
   /**
-   * Register a new user account.
+   * Register a new user account (tokens set in HttpOnly cookies by backend).
    */
   register: (data: RegisterRequest): Promise<AuthResponse> =>
     apiClient.post<AuthResponse>(ENDPOINTS.auth.register, data),
 
   /**
-   * Exchange a refresh token for a new token pair.
+   * Refresh tokens (reads refresh token from cookie, sets new tokens in cookies).
    */
-  refresh: (refreshToken: string): Promise<TokensResponse> =>
-    apiClient.post<TokensResponse>(ENDPOINTS.auth.refresh, { refreshToken }),
+  refresh: (): Promise<RefreshResponse> =>
+    apiClient.post<RefreshResponse>(ENDPOINTS.auth.refresh),
 
   /**
-   * Invalidate the current session on the server.
+   * Invalidate the current session and clear cookies.
    */
-  logout: (): Promise<void> =>
-    apiClient.post<void>(ENDPOINTS.auth.logout),
+  logout: (): Promise<LogoutResponse> =>
+    apiClient.post<LogoutResponse>(ENDPOINTS.auth.logout),
 
   /**
    * Fetch the currently authenticated user's profile.

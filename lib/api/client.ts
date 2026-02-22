@@ -32,9 +32,7 @@ interface RequestOptions {
 
 interface ApiClientConfig {
   baseUrl: string
-  getAccessToken: () => string | null
   getTenantId: () => string | null
-  onTokenRefresh: () => Promise<string | null>
   onAuthError: () => void
 }
 
@@ -44,16 +42,13 @@ interface ApiClientConfig {
 
 class ApiClient {
   private readonly baseUrl: string
-  private readonly getAccessToken: () => string | null
   private readonly getTenantId: () => string | null
-  private readonly onTokenRefresh: () => Promise<string | null>
   private readonly onAuthError: () => void
+  private isRefreshing = false
 
   constructor(config: ApiClientConfig) {
     this.baseUrl = config.baseUrl
-    this.getAccessToken = config.getAccessToken
     this.getTenantId = config.getTenantId
-    this.onTokenRefresh = config.onTokenRefresh
     this.onAuthError = config.onAuthError
   }
 
@@ -69,12 +64,6 @@ class ApiClient {
       ...options.headers,
     }
 
-    // Inject auth token
-    const token = this.getAccessToken()
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-
     // Inject tenant ID
     const tenantId = this.getTenantId()
     if (tenantId) {
@@ -85,16 +74,17 @@ class ApiClient {
       method: options.method ?? 'GET',
       headers,
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      credentials: 'include', // Send cookies with requests
     }
 
     let response = await fetch(url, fetchOptions)
 
-    // Handle 401 — attempt token refresh once
-    if (response.status === 401 && token) {
-      const newToken = await this.onTokenRefresh()
-      if (newToken) {
-        headers['Authorization'] = `Bearer ${newToken}`
-        response = await fetch(url, { ...fetchOptions, headers })
+    // Handle 401 — attempt token refresh once (but not for refresh endpoint itself)
+    const isRefreshEndpoint = endpoint.includes('/auth/refresh')
+    if (response.status === 401 && !isRefreshEndpoint && !this.isRefreshing) {
+      const refreshed = await this.attemptRefresh()
+      if (refreshed) {
+        response = await fetch(url, fetchOptions)
       } else {
         this.onAuthError()
         throw new ApiError('Session expired. Please log in again.', 401, 'SESSION_EXPIRED')
@@ -102,6 +92,29 @@ class ApiClient {
     }
 
     return this.handleResponse<T>(response)
+  }
+
+  // -------------------------------------------------------------------------
+  // Token refresh attempt
+  // -------------------------------------------------------------------------
+
+  private async attemptRefresh(): Promise<boolean> {
+    if (this.isRefreshing) {
+      return false
+    }
+
+    this.isRefreshing = true
+    try {
+      const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      return response.ok
+    } catch {
+      return false
+    } finally {
+      this.isRefreshing = false
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -205,7 +218,7 @@ function getAuthStore() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useAuthStore } = require('@/stores/auth.store') as {
-      useAuthStore: { getState: () => { accessToken?: string | null; refreshToken?: string | null; setTokens?: (a: string, r: string) => void; logout?: () => void } }
+      useAuthStore: { getState: () => { logout?: () => void } }
     }
     return useAuthStore?.getState?.() ?? {}
   } catch {
@@ -228,50 +241,20 @@ function getTenantStore() {
 export const apiClient = new ApiClient({
   baseUrl: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000',
 
-  getAccessToken: () => {
-    const state = getAuthStore()
-    return state.accessToken ?? null
-  },
-
   getTenantId: () => {
     const state = getTenantStore()
     return state.tenantId ?? null
-  },
-
-  onTokenRefresh: async () => {
-    const state = getAuthStore()
-    const refreshToken = state.refreshToken
-    if (!refreshToken) return null
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/auth/refresh`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
-        },
-      )
-
-      if (!response.ok) return null
-
-      const data = (await response.json()) as { data?: { accessToken: string; refreshToken: string } }
-      const tokens = data.data
-      if (!tokens) return null
-
-      const authState = getAuthStore()
-      authState.setTokens?.(tokens.accessToken, tokens.refreshToken)
-      return tokens.accessToken
-    } catch {
-      return null
-    }
   },
 
   onAuthError: () => {
     const state = getAuthStore()
     state.logout?.()
     if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+      // Only redirect if not already on login page (prevent infinite loop)
+      const currentPath = window.location.pathname
+      if (currentPath !== '/login' && currentPath !== '/register') {
+        window.location.href = '/login'
+      }
     }
   },
 })

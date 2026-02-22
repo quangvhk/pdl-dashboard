@@ -15,7 +15,7 @@ import type { LoginRequest } from '@/types'
  * - Stores tenant info in tenant store
  * - Redirects to /dashboard
  */
-export function useLogin() {
+export function useLogin(callbackUrl = '/dashboard') {
   const router = useRouter()
   const { login } = useAuthStore()
   const { setTenant } = useTenantStore()
@@ -33,7 +33,7 @@ export function useLogin() {
         '',
       )
 
-      router.push('/dashboard')
+      router.push(callbackUrl)
     },
   })
 }

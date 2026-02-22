@@ -1,4 +1,34 @@
-// Auth Types — placeholder for Task 2.1
-// Full implementation: AuthUser, AuthResponse, TokensResponse, LoginRequest, RegisterRequest
+export interface AuthUser {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  tenantId: string
+  roles: string[]
+  isActive: boolean
+}
 
-export {};
+export interface AuthResponse {
+  accessToken: string
+  refreshToken: string
+  user: AuthUser
+}
+
+export interface TokensResponse {
+  accessToken: string
+  refreshToken: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+  tenantSlug: string
+}
+
+export interface RegisterRequest {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  tenantSlug: string
+}

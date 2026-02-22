@@ -1,5 +1,25 @@
 # Pandalang — Completed Tasks
 
+## Task 2.1: TypeScript Types ✅
+
+**Files updated:**
+- `types/api.ts` — `ApiResponse<T>`, `PaginatedResponse<T>`, `ApiErrorResponse`, `PaginationParams`
+- `types/auth.ts` — `AuthUser`, `AuthResponse`, `TokensResponse`, `LoginRequest`, `RegisterRequest`
+- `types/tenant.ts` — `Tenant`, `TenantStatus`, `CreateTenantRequest`, `UpdateTenantRequest`, `UpdateTenantStatusRequest`
+- `types/user.ts` — `User`, `Role`, `CreateUserRequest`, `UpdateUserRequest`, `AssignRoleRequest`
+- `types/course.ts` — `Course`, `Section`, `Lesson`, `CourseLevel`, `CourseStatus`, `ContentType`, all create/update request types
+- `types/enrollment.ts` — `Enrollment`, `EnrollmentStatus`, `EnrollmentCourse`, `EnrollmentUser`, `CreateEnrollmentRequest`, `UpdateProgressRequest`
+- `types/quiz.ts` — `Quiz`, `QuizQuestion`, `QuizAnswer`, `QuizAttempt`, `QuestionType`, `SubmitQuizRequest`, `SubmitQuizAnswer`, create/update request types for quizzes and questions
+- `types/index.ts` — Barrel re-export of all types from all domain modules
+
+**Notes:**
+- All types derived from backend API swagger schemas in `plans/04-api-client-layer.md` Sections 2–3
+- `QuizAnswer.isCorrect` intentionally omitted (not exposed to students by the API)
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0)
+- Types importable via `@/types` barrel export
+
+---
+
 ## Task 1.5: Set Up Providers ✅
 
 **Files created/updated:**

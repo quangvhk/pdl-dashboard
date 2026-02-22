@@ -1,5 +1,27 @@
 # Pandalang — Completed Tasks
 
+## Task 1.3: Environment Configuration ✅
+
+**Files created/updated:**
+- `.env.local` — Local development environment variables
+- `.env.example` — Template with placeholder values (committed to repo)
+- `next.config.ts` — Updated with `images.remotePatterns` for CDN domains and API rewrites
+
+**Environment variables configured:**
+- `NEXT_PUBLIC_API_URL=http://localhost:3000` — Backend API base URL
+- `NEXT_PUBLIC_APP_URL=http://localhost:3001` — Frontend app URL
+- `NEXT_PUBLIC_DEFAULT_TENANT_SLUG=demo` — Default tenant for development
+
+**next.config.ts additions:**
+- `images.remotePatterns` for AWS S3, Cloudinary, Supabase, Gravatar CDN domains
+- `rewrites()` proxying `/api/v1/*` → `NEXT_PUBLIC_API_URL/api/v1/*` for CORS-free dev
+
+**Notes:**
+- `.env.local` is covered by `.env*` pattern in `.gitignore` (not committed)
+- `.env.example` is committed as a template for new developers
+
+---
+
 ## Task 1.2: Initialize shadcn/ui ✅
 
 **shadcn/ui initialized with:**

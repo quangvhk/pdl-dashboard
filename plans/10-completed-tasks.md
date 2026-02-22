@@ -1,5 +1,31 @@
 # Pandalang — Completed Tasks
 
+## Task 8.1: User Management ✅
+
+**Files created:**
+- `features/users/hooks/use-users.ts` — `usersQueryKeys` factory (`all`, `lists`, `list(params)`, `details`, `detail(id)`); `useUsers` query hook wrapping `usersService.list`; accepts `search`, `role`, `isActive`, `page`, `limit` params; `staleTime` 2 minutes.
+- `features/users/hooks/use-user.ts` — `useUser` query hook wrapping `usersService.getById`; enabled only when `userId` is truthy; `staleTime` 2 minutes.
+- `features/users/hooks/use-create-user.ts` — `useCreateUser` mutation hook; wraps `usersService.create`; on success invalidates `usersQueryKeys.lists()` and navigates to `/users/[id]`.
+- `features/users/hooks/use-assign-role.ts` — `useAssignRole` mutation hook wrapping `usersService.assignRole`; `useRemoveRole` mutation hook wrapping `usersService.removeRole`; both update detail cache + invalidate lists on success.
+- `features/users/schemas/user.schema.ts` — `createUserSchema` Zod object (firstName, lastName, email, password with strength rules); `updateUserSchema` (firstName, lastName, optional avatar URL); exports `CreateUserFormValues` and `UpdateUserFormValues` inferred types.
+- `features/users/components/role-badge.tsx` — `RoleBadge` client component; maps role name string to `Badge` variant (`SUPER_ADMIN` → destructive, `TENANT_ADMIN` → default, `INSTRUCTOR` → secondary, `STUDENT` → outline); falls back gracefully for unknown roles.
+- `features/users/components/user-table.tsx` — `UserTable` client component; role filter `Select` (All/Super Admin/Admin/Instructor/Student); `DataTable<User>` with columns: User (avatar + name + email link), Roles (RoleBadge list), Status (CheckCircle2/XCircle), Last Login, Joined; built-in `searchable` with controlled search + page reset; `Pagination` with last-page heuristic (array length < PAGE_SIZE 20); error banner on fetch failure; `onRowClick` navigates to user detail.
+- `features/users/components/user-form.tsx` — `UserForm` client component; React Hook Form + `createUserSchema`; fields: firstName, lastName, email, password (show/hide toggle); API error banner; "Cancel" + "Create User" buttons; `useCreateUser` on submit.
+- `features/users/components/user-detail.tsx` — `UserDetail` client component; fetches user via `useUser`; Profile card with avatar, name, email, roles, joined/last-login/status meta; Edit Profile form (React Hook Form + `updateUserSchema`, `isDirty` guard, Discard button); Role Management card with current roles + remove (X button) + assign role `Select` + Assign button; Danger Zone card with `AlertDialog`-confirmed Deactivate action (hidden when already inactive); loading skeleton + error banner states.
+- `app/(dashboard)/users/page.tsx` — `'use client'` page; role gate (TENANT_ADMIN/SUPER_ADMIN only — others see `Lock` icon + "Access Restricted"); `PageHeader` with "+ New User" button; summary badge; renders `UserTable`.
+- `app/(dashboard)/users/new/page.tsx` — `'use client'` page; role gate (TENANT_ADMIN/SUPER_ADMIN only); `PageHeader` with "Back to Users" button; `Card` wrapping `UserForm` with `onCancel` navigating back to `/users`.
+- `app/(dashboard)/users/[userId]/page.tsx` — `'use client'` page; unwraps `params` via React 19 `use(params)`; role gate (TENANT_ADMIN/SUPER_ADMIN only); `PageHeader` with "Back to Users" button; renders `<UserDetail userId={userId} />`.
+
+**Notes:**
+- `usersQueryKeys` follows the same factory pattern as `coursesQueryKeys` — `all`, `lists()`, `list(params)`, `details()`, `detail(id)`.
+- `useAssignRole` and `useRemoveRole` accept `userId` at hook call site (not mutation call site) — consistent with `useUpdateCourse` pattern.
+- `UserDetail` uses `useForm` with `values` (not `defaultValues`) so the form auto-resets when the user data loads or changes.
+- Role assignment uses `roleId` field from `AssignRoleRequest` — the select value is the role name string (e.g. `'INSTRUCTOR'`) which the API accepts as the roleId for named roles.
+- Deactivate uses `usersService.deactivate` (DELETE method) — the Danger Zone card is hidden when `user.isActive` is already false.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 7.3: Course Enrollments View (Instructor) ✅
 
 **Files created:**

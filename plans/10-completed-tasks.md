@@ -1,5 +1,18 @@
 # Pandalang — Completed Tasks
 
+## Task 2.5: Auth Initializer ✅
+
+**Files created/updated:**
+- `components/providers/auth-initializer.tsx` — `AuthInitializer` client component; on mount checks persisted `refreshToken` from auth store; if present, calls `authService.refresh()` to silently restore tokens via `setTokens`, then calls `authService.getMe()` to restore user via `setUser`; on any failure calls `logout()` to clear state and cookie; always calls `setInitialized(true)` in `finally`; renders a full-page centered spinner (`animate-spin` div) while `isInitialized` is `false`; renders `children` once initialized.
+- `components/providers/providers.tsx` — Updated to wrap `ThemeProvider` children with `<AuthInitializer>`, placing it inside `QueryProvider` so React Query is available for any future query-based initialization.
+
+**Notes:**
+- `AuthInitializer` is a `'use client'` component; the `useEffect` dependency array is intentionally empty (runs once on mount) with `eslint-disable-line react-hooks/exhaustive-deps`.
+- Loading spinner uses Tailwind `animate-spin` + `border-primary` / `border-t-transparent` pattern — no extra dependency needed.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 2.4: Zustand Stores ✅
 
 **Files updated:**

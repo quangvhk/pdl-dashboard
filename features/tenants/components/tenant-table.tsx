@@ -43,6 +43,7 @@ const columns: DataTableColumn<Tenant>[] = [
     key: 'slug',
     header: 'Slug',
     sortable: true,
+    className: 'hidden sm:table-cell',
     cell: (row) => (
       <code className="bg-muted rounded px-1.5 py-0.5 text-xs">{row.slug}</code>
     ),
@@ -50,6 +51,7 @@ const columns: DataTableColumn<Tenant>[] = [
   {
     key: 'domain',
     header: 'Domain',
+    className: 'hidden md:table-cell',
     cell: (row) =>
       row.domain ? (
         <span className="text-muted-foreground text-sm">{row.domain}</span>
@@ -69,6 +71,7 @@ const columns: DataTableColumn<Tenant>[] = [
     key: 'createdAt',
     header: 'Created',
     sortable: true,
+    className: 'hidden lg:table-cell',
     cell: (row) => (
       <span className="text-muted-foreground text-sm">
         {format(new Date(row.createdAt), 'MMM d, yyyy')}

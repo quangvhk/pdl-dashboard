@@ -313,7 +313,7 @@ export function QuizTaker({ courseId, quizId }: QuizTakerProps) {
         </Card>
 
         {/* Navigation footer */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
             variant="outline"
             onClick={handlePrev}
@@ -321,13 +321,13 @@ export function QuizTaker({ courseId, quizId }: QuizTakerProps) {
             className="gap-1"
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            <span className="hidden xs:inline">Previous</span>
           </Button>
 
           <div className="flex gap-2">
             {currentIndex < totalQuestions - 1 ? (
               <Button onClick={handleNext} className="gap-1">
-                Next
+                <span className="hidden xs:inline">Next</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             ) : (

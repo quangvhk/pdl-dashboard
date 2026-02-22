@@ -490,7 +490,7 @@ export function LessonViewer({ courseId, sectionId, lessonId }: LessonViewerProp
 
         {/* Footer navigation */}
         <footer className="border-t bg-background px-4 py-3 sm:px-6 shrink-0">
-          <div className="mx-auto max-w-3xl flex items-center justify-between gap-3">
+          <div className="mx-auto max-w-3xl flex items-center justify-between gap-2">
             {/* Previous */}
             <Button
               variant="outline"
@@ -505,13 +505,14 @@ export function LessonViewer({ courseId, sectionId, lessonId }: LessonViewerProp
                   router.push(`/courses/${courseId}/sections/${prevSection.id}/lessons`)
                 }
               }}
+              className="shrink-0"
             >
-              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-              Previous
+              <ArrowLeft className="h-3.5 w-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">Previous</span>
             </Button>
 
             {/* Center: time + mark complete */}
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex min-w-0 flex-col items-center gap-1">
               <span className="text-xs text-muted-foreground hidden sm:block">
                 ⏱ {formatTime(timeSpentSeconds)}
               </span>
@@ -520,17 +521,17 @@ export function LessonViewer({ courseId, sectionId, lessonId }: LessonViewerProp
                   size="sm"
                   onClick={handleMarkComplete}
                   disabled={updateProgress.isPending}
-                  className="gap-1.5"
+                  className="gap-1.5 whitespace-nowrap"
                 >
                   {updateProgress.isPending ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Saving…
+                      <span className="hidden xs:inline">Saving…</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                      Mark Complete
+                      <span className="hidden xs:inline">Mark Complete</span>
                     </>
                   )}
                 </Button>
@@ -551,9 +552,10 @@ export function LessonViewer({ courseId, sectionId, lessonId }: LessonViewerProp
                   router.push(`/courses/${courseId}/sections/${nextSection.id}/lessons`)
                 }
               }}
+              className="shrink-0"
             >
-              Next
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Next</span>
+              <ArrowRight className="h-3.5 w-3.5 sm:ml-1.5" />
             </Button>
           </div>
 

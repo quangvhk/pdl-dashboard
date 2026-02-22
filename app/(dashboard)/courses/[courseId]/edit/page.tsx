@@ -174,12 +174,13 @@ export default function CourseEditPage({ params }: PageProps) {
         title={`Edit: ${course.title}`}
         description={`${course.sectionsCount ?? 0} section${(course.sectionsCount ?? 0) !== 1 ? 's' : ''}`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant={STATUS_VARIANT[course.status] ?? 'outline'}>{course.status}</Badge>
             <Button asChild variant="outline" size="sm">
               <Link href={`/courses/${courseId}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Course
+                <span className="hidden sm:inline">Back to Course</span>
+                <span className="sm:hidden">Back</span>
               </Link>
             </Button>
 

@@ -66,6 +66,7 @@ const columns: DataTableColumn<Enrollment>[] = [
   {
     key: 'progress',
     header: 'Progress',
+    className: 'hidden sm:table-cell',
     cell: (row) => (
       <div className="flex min-w-[120px] items-center gap-2">
         <Progress value={row.progressPercent} className="h-2 flex-1" />
@@ -79,6 +80,7 @@ const columns: DataTableColumn<Enrollment>[] = [
     key: 'enrolledAt',
     header: 'Enrolled',
     sortable: true,
+    className: 'hidden md:table-cell',
     cell: (row) => (
       <span className="text-muted-foreground text-sm">
         {format(new Date(row.enrolledAt), 'MMM d, yyyy')}
@@ -89,6 +91,7 @@ const columns: DataTableColumn<Enrollment>[] = [
     key: 'completedAt',
     header: 'Completed',
     sortable: true,
+    className: 'hidden lg:table-cell',
     cell: (row) =>
       row.completedAt ? (
         <span className="text-muted-foreground text-sm">

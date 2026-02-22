@@ -61,6 +61,7 @@ const columns: DataTableColumn<User>[] = [
   {
     key: 'roles',
     header: 'Roles',
+    className: 'hidden sm:table-cell',
     cell: (row) => {
       if (!row.roles || row.roles.length === 0) {
         return <span className="text-muted-foreground text-sm">No roles</span>
@@ -95,6 +96,7 @@ const columns: DataTableColumn<User>[] = [
     key: 'lastLoginAt',
     header: 'Last Login',
     sortable: true,
+    className: 'hidden md:table-cell',
     cell: (row) =>
       row.lastLoginAt ? (
         <span className="text-muted-foreground text-sm">
@@ -108,6 +110,7 @@ const columns: DataTableColumn<User>[] = [
     key: 'createdAt',
     header: 'Joined',
     sortable: true,
+    className: 'hidden lg:table-cell',
     cell: (row) => (
       <span className="text-muted-foreground text-sm">
         {format(new Date(row.createdAt), 'MMM d, yyyy')}
@@ -145,7 +148,7 @@ export function UserTable() {
             setPage(1)
           }}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <UserCircle className="mr-2 h-4 w-4 shrink-0" />
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>

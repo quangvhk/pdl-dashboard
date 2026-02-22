@@ -168,8 +168,8 @@ export function DataTable<TRow>({
       ) : rows.length === 0 ? (
         <EmptyState title={emptyTitle} description={emptyDescription} />
       ) : (
-        <div className="overflow-hidden rounded-md border">
-          <Table>
+        <div className="overflow-x-auto rounded-md border">
+          <Table className="min-w-full">
             <TableHeader>
               <TableRow>
                 {columns.map((col) => (

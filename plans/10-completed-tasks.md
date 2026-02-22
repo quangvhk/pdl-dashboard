@@ -1,5 +1,27 @@
 # Pandalang — Completed Tasks
 
+## Task 9.3: Responsive Polish ✅
+
+**Files modified:**
+- `components/shared/data-table.tsx` — Changed table wrapper from `overflow-hidden` to `overflow-x-auto` and added `min-w-full` to `<Table>` so all data tables scroll horizontally on narrow viewports instead of clipping content.
+- `features/users/components/user-table.tsx` — `roles` column: `hidden sm:table-cell` (hidden on mobile); `lastLoginAt` column: `hidden md:table-cell`; `createdAt` column: `hidden lg:table-cell`; role filter `SelectTrigger`: `w-full sm:w-[160px]` (full-width on mobile).
+- `features/tenants/components/tenant-table.tsx` — `slug` column: `hidden sm:table-cell`; `domain` column: `hidden md:table-cell`; `createdAt` column: `hidden lg:table-cell` — keeps Name + Status always visible on mobile.
+- `app/(dashboard)/courses/[courseId]/enrollments/page.tsx` — `progress` column: `hidden sm:table-cell`; `enrolledAt` column: `hidden md:table-cell`; `completedAt` column: `hidden lg:table-cell` — Student + Status always visible on mobile.
+- `features/quizzes/components/quiz-taker.tsx` — Navigation footer changed to `flex-wrap` so Previous/Next buttons wrap on very small screens; button labels use `hidden xs:inline` so icon-only buttons appear on the smallest viewports.
+- `features/courses/components/lesson-viewer.tsx` — Footer 3-button layout: Previous/Next buttons get `shrink-0` and show icon-only on mobile (`hidden sm:inline` labels); center "Mark Complete" button text hidden on mobile (`hidden xs:inline`); center div gets `min-w-0` to prevent overflow; footer gap reduced to `gap-2`.
+- `app/(dashboard)/courses/[courseId]/edit/page.tsx` — PageHeader actions wrapper changed from `flex items-center gap-2` to `flex flex-wrap items-center gap-2` so the badge + Back/Publish/Archive/Delete buttons wrap on mobile; "Back to Course" label shortened to "Back" on mobile (`hidden sm:inline` / `sm:hidden`).
+
+**Notes:**
+- All data tables now scroll horizontally on mobile via `overflow-x-auto` on the wrapper div — no content is clipped.
+- Column visibility strategy: always show the primary identity column (Name/Student/User) and Status; progressively reveal secondary columns at `sm`, `md`, `lg` breakpoints.
+- `xs` breakpoint is not a default Tailwind breakpoint — `hidden xs:inline` classes are used as progressive enhancement; on the smallest screens the buttons remain functional with icon-only display.
+- Course grid (1 col mobile → 2 col tablet → 3 col desktop) was already correct from Task 5.2 — no changes needed.
+- Sidebar Sheet drawer (MobileNav) was already correct from Task 3.2 — no changes needed.
+- Forms (login, register, course form, user form, tenant form) already use full-width inputs — no changes needed.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 9.2: Toast Notifications ✅
 
 **Files modified:**

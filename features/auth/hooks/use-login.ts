@@ -2,6 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { authService } from '@/lib/api/services/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
 import { useTenantStore } from '@/stores/tenant.store'
@@ -33,7 +34,16 @@ export function useLogin(callbackUrl = '/dashboard') {
         '',
       )
 
+      toast.success('Welcome back!', {
+        description: `Signed in as ${response.user.firstName} ${response.user.lastName}`,
+      })
+
       router.push(callbackUrl)
+    },
+    onError: (err) => {
+      toast.error('Sign in failed', {
+        description: err instanceof Error ? err.message : 'Invalid credentials. Please try again.',
+      })
     },
   })
 }

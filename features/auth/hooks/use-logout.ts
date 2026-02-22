@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { authService } from '@/lib/api/services/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
 import { useTenantStore } from '@/stores/tenant.store'
@@ -29,6 +30,7 @@ export function useLogout() {
       logout()
       clearTenant()
       queryClient.clear()
+      toast.success('Signed out successfully')
       router.push('/login')
     },
   })

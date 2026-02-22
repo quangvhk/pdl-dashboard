@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import {
   Loader2,
   AlertCircle,
@@ -83,9 +84,14 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
       queryClient.setQueryData(tenantsQueryKeys.detail(tenantId), updatedTenant)
       queryClient.invalidateQueries({ queryKey: tenantsQueryKeys.lists() })
       setUpdateError(null)
+      toast.success('Tenant updated', {
+        description: `"${updatedTenant.name}" settings have been saved.`,
+      })
     },
     onError: (err) => {
-      setUpdateError(err instanceof Error ? err.message : 'Failed to update tenant.')
+      const message = err instanceof Error ? err.message : 'Failed to update tenant.'
+      setUpdateError(message)
+      toast.error('Failed to update tenant', { description: message })
     },
   })
 
@@ -96,6 +102,19 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
     onSuccess: (updatedTenant) => {
       queryClient.setQueryData(tenantsQueryKeys.detail(tenantId), updatedTenant)
       queryClient.invalidateQueries({ queryKey: tenantsQueryKeys.lists() })
+      const statusLabel: Record<TenantStatus, string> = {
+        ACTIVE: 'activated',
+        TRIAL: 'set to Trial',
+        SUSPENDED: 'suspended',
+      }
+      toast.success(`Tenant ${statusLabel[updatedTenant.status]}`, {
+        description: `"${updatedTenant.name}" status has been updated.`,
+      })
+    },
+    onError: (err) => {
+      toast.error('Failed to update tenant status', {
+        description: err instanceof Error ? err.message : 'Please try again.',
+      })
     },
   })
 

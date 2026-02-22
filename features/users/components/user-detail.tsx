@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import {
   Loader2,
   AlertCircle,
@@ -81,9 +82,14 @@ export function UserDetail({ userId }: UserDetailProps) {
       queryClient.setQueryData(usersQueryKeys.detail(userId), updatedUser)
       queryClient.invalidateQueries({ queryKey: usersQueryKeys.lists() })
       setUpdateError(null)
+      toast.success('Profile updated', {
+        description: `${updatedUser.firstName} ${updatedUser.lastName}'s profile has been saved.`,
+      })
     },
     onError: (err) => {
-      setUpdateError(err instanceof Error ? err.message : 'Failed to update profile.')
+      const message = err instanceof Error ? err.message : 'Failed to update profile.'
+      setUpdateError(message)
+      toast.error('Failed to update profile', { description: message })
     },
   })
 
@@ -93,6 +99,14 @@ export function UserDetail({ userId }: UserDetailProps) {
     onSuccess: (updatedUser) => {
       queryClient.setQueryData(usersQueryKeys.detail(userId), updatedUser)
       queryClient.invalidateQueries({ queryKey: usersQueryKeys.lists() })
+      toast.success('Account deactivated', {
+        description: `${updatedUser.firstName} ${updatedUser.lastName} can no longer log in.`,
+      })
+    },
+    onError: (err) => {
+      toast.error('Failed to deactivate account', {
+        description: err instanceof Error ? err.message : 'Please try again.',
+      })
     },
   })
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { enrollmentsService } from '@/lib/api/services/enrollments.service'
 import { enrollmentsQueryKeys } from './use-enrollments'
 import type { UpdateProgressRequest } from '@/types'
@@ -32,11 +33,20 @@ export function useUpdateProgress() {
       return { previous, enrollmentId }
     },
 
+    onSuccess: () => {
+      toast.success('Lesson completed!', {
+        description: 'Your progress has been saved.',
+      })
+    },
+
     onError: (_err, _vars, context) => {
       // Roll back to the snapshot on error
       if (context?.previous !== undefined) {
         queryClient.setQueryData(enrollmentsQueryKeys.mine(), context.previous)
       }
+      toast.error('Failed to save progress', {
+        description: 'Your progress could not be saved. Please try again.',
+      })
     },
 
     onSettled: () => {

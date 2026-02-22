@@ -1,5 +1,29 @@
 # Pandalang — Completed Tasks
 
+## Task 8.2: Tenant Management ✅
+
+**Files created:**
+- `features/tenants/hooks/use-tenants.ts` — `tenantsQueryKeys` factory (`all`, `lists()`, `list(params)`, `details()`, `detail(id)`); `useTenants` query hook wrapping `tenantsService.list`; accepts `search`, `page`, `limit` params; `staleTime` 2 minutes.
+- `features/tenants/hooks/use-tenant.ts` — `useTenant` query hook wrapping `tenantsService.getById`; enabled only when `tenantId` is truthy; `staleTime` 2 minutes.
+- `features/tenants/hooks/use-create-tenant.ts` — `useCreateTenant` mutation hook; wraps `tenantsService.create`; on success invalidates `tenantsQueryKeys.lists()` and navigates to `/tenants/[id]`.
+- `features/tenants/schemas/tenant.schema.ts` — `createTenantSchema` Zod object (name required max 200, slug required max 100 lowercase-alphanumeric-hyphen regex, domain optional); `updateTenantSchema` (name required, domain optional); exports `CreateTenantFormValues` and `UpdateTenantFormValues` inferred types.
+- `features/tenants/components/tenant-table.tsx` — `TenantTable` client component; `DataTable<Tenant>` with columns: Name (Building2 icon), Slug (code element), Domain, Status (`Badge` with `STATUS_VARIANT` map: ACTIVE → default, TRIAL → secondary, SUSPENDED → destructive), Created; built-in `searchable` with controlled search + page reset; `Pagination` with last-page heuristic (array length < PAGE_SIZE 20); error banner on fetch failure; `onRowClick` navigates to tenant detail.
+- `features/tenants/components/tenant-form.tsx` — `TenantForm` client component; React Hook Form + `createTenantSchema`; fields: name (required), slug (required, Building2 icon prefix, helper text noting immutability), domain (optional); API error banner; "Cancel" + "Create Tenant" buttons; `useCreateTenant` on submit.
+- `features/tenants/components/tenant-detail.tsx` — `TenantDetail` client component; fetches tenant via `useTenant`; Tenant Overview card with name, status badge + icon, slug (code), domain, created date meta; status action buttons (Activate / Set Trial / Suspend) — each button hidden when tenant is already in that status, each wrapped in `AlertDialog` confirmation; Suspend uses destructive variant; Tenant Settings card with edit form (React Hook Form + `updateTenantSchema`, slug read-only disabled field, `isDirty` guard, Discard button); loading skeleton + error banner states.
+- `app/(dashboard)/tenants/page.tsx` — `'use client'` page; role gate (SUPER_ADMIN only — others see `Lock` icon + "Access Restricted"); `PageHeader` with "+ New Tenant" button; renders `TenantTable`.
+- `app/(dashboard)/tenants/new/page.tsx` — `'use client'` page; role gate (SUPER_ADMIN only); `PageHeader` with "Back to Tenants" button; `Card` wrapping `TenantForm` with `onCancel` navigating back to `/tenants`.
+- `app/(dashboard)/tenants/[tenantId]/page.tsx` — `'use client'` page; unwraps `params` via React 19 `use(params)`; role gate (SUPER_ADMIN only); `PageHeader` with "Back to Tenants" button; renders `<TenantDetail tenantId={tenantId} />`.
+
+**Notes:**
+- `tenantsQueryKeys` follows the same factory pattern as `usersQueryKeys` — `all`, `lists()`, `list(params)`, `details()`, `detail(id)`.
+- `AuthUser.roles` is `string[]` (not objects) — role gate uses `roles.includes('SUPER_ADMIN')` directly.
+- `TenantDetail` uses `useForm` with `values` (not `defaultValues`) so the form auto-resets when tenant data loads or changes.
+- Status mutation uses `tenantsService.updateStatus` (PATCH to `/tenants/:id/status`) — each status transition has its own `AlertDialog` confirmation; the button for the current status is hidden.
+- Slug field is rendered as a disabled read-only `Input` in the edit form with a helper note that it cannot be changed after creation.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 8.1: User Management ✅
 
 **Files created:**

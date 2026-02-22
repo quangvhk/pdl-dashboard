@@ -1,5 +1,24 @@
 # Pandalang — Completed Tasks
 
+## Task 3.2: Dashboard Layout ✅
+
+**Files created:**
+- `components/ui/tooltip.tsx` — Tooltip primitive built from `radix-ui` `Tooltip` namespace; exports `TooltipProvider`, `Tooltip`, `TooltipTrigger`, `TooltipContent` with arrow; matches shadcn/ui New York style.
+- `components/layout/sidebar.tsx` — `Sidebar` client component; reads `user.roles` from auth store and `sidebarCollapsed` from UI store; filters `navigation` array by role; renders full-width nav links when expanded, icon-only links with `TooltipContent` side labels when collapsed; collapse/expand toggle button at bottom; `w-64` expanded / `w-16` collapsed with `transition-all duration-300`; uses `ScrollArea` for nav overflow.
+- `components/layout/header.tsx` — `Header` client component; mobile hamburger (`Menu` icon) calls `toggleSidebar`; renders `<Breadcrumbs />`; theme toggle `DropdownMenu` (Light / Dark / System via `next-themes` `setTheme`); user avatar `DropdownMenu` showing display name, email, role; Profile / Settings links; Log out action calls `logout()` + `router.push('/login')`.
+- `components/layout/breadcrumbs.tsx` — `Breadcrumbs` client component; splits `usePathname()` into segments; maps each segment to a human-readable label via `SEGMENT_LABELS` lookup (falls back to capitalised slug or shortened UUID); renders `Home` icon → chevron-separated links → bold current page; last segment uses `aria-current="page"`.
+- `components/layout/mobile-nav.tsx` — `MobileNav` client component; `Sheet` (slide-out drawer, `side="left"`) controlled by `sidebarOpen` / `setSidebarOpen` from UI store; same role-filtered `navigation` array as sidebar; each link closes the sheet on click; `X` close button in sheet header.
+- `app/(dashboard)/layout.tsx` — Dashboard route-group layout; `flex h-svh overflow-hidden` root; desktop `<Sidebar />` hidden on mobile (`hidden lg:flex`); `<MobileNav />` always mounted (Sheet handles visibility); `<Header />` + scrollable `<main>` with `container mx-auto p-6`; exports `metadata` with `title.template`.
+
+**Notes:**
+- `tooltip.tsx` was created manually (shadcn CLI pnpm install failed in workspace); uses same `radix-ui` named-export pattern as other shadcn components.
+- Sidebar collapse state persists to `localStorage` via `useUIStore` (Task 2.4).
+- Mobile nav open/close state is driven by `useUIStore.sidebarOpen`; the desktop hamburger in `Header` calls `toggleSidebar` which opens the `MobileNav` Sheet on mobile.
+- Role filtering uses `user.roles` array — all roles visible to `SUPER_ADMIN`, `TENANT_ADMIN`, `INSTRUCTOR`, `STUDENT` as per spec.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 3.1: Auth Layout ✅
 
 **Files created:**

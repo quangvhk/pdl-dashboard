@@ -1,5 +1,21 @@
 # Pandalang — Completed Tasks
 
+## Task 7.1: Create Course Page ✅
+
+**Files created:**
+- `features/courses/schemas/course.schema.ts` — `createCourseSchema` Zod object; validates `title` (required, max 200 chars), `description` (optional, max 2000 chars), `level` (enum `BEGINNER`|`INTERMEDIATE`|`ADVANCED`), `thumbnail` (optional valid URL or empty string); exports `CreateCourseFormValues` inferred type.
+- `features/courses/hooks/use-create-course.ts` — `useCreateCourse` mutation hook; wraps `coursesService.create`; on success invalidates `coursesQueryKeys.lists()` so the course list refreshes; navigates to `/courses/[id]/edit` so the instructor can immediately add sections and lessons.
+- `features/courses/components/course-form.tsx` — `CourseForm` client component; accepts optional `onCancel` callback; React Hook Form + Zod resolver (`createCourseSchema`); fields: title (required), description (optional `Textarea`), level (`Select` with Beginner/Intermediate/Advanced options + descriptions), thumbnail URL (optional, `BookOpen` icon prefix); API error banner with `AlertCircle`; "Cancel" button (shown when `onCancel` provided) + "Create Course" submit button with `Loader2` spinner while pending; `useForm` typed with explicit third generic `CreateCourseFormValues` to satisfy `zodResolver` type constraints.
+- `app/(dashboard)/courses/new/page.tsx` — `'use client'` page; reads `user.roles` from `useAuthStore`; role gate — students see an access-restricted state with `Lock` icon and "Back to Courses" button; instructors/admins see `PageHeader` with back button + `Card` wrapping `CourseForm`; on cancel navigates back to `/courses`.
+
+**Notes:**
+- `level` field uses `z.enum(...)` without `.default()` to avoid `zodResolver` generic mismatch; the form `defaultValues` sets `level: 'BEGINNER'` instead.
+- `useCreateCourse` redirects to `/courses/[id]/edit` on success — the edit page (Task 7.2) handles full course builder functionality.
+- Role gate is client-side only (consistent with the rest of the app); middleware handles unauthenticated redirects.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 6.3: My Enrollments Page ✅
 
 **Files created:**

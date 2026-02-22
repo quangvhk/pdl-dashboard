@@ -1,5 +1,21 @@
 # Pandalang — Completed Tasks
 
+## Task 1.5: Set Up Providers ✅
+
+**Files created/updated:**
+- `components/providers/query-provider.tsx` — React Query provider with `QueryClient` (staleTime 5 min, gcTime 10 min, retry logic skipping 4xx, `refetchOnWindowFocus`, `refetchOnReconnect`). Includes `ReactQueryDevtools` in development.
+- `components/providers/theme-provider.tsx` — `next-themes` provider with `attribute="class"`, `defaultTheme="system"`, `enableSystem`, `disableTransitionOnChange`.
+- `components/providers/providers.tsx` — Composed provider wrapping `QueryProvider` → `ThemeProvider`.
+- `app/layout.tsx` — Updated metadata (`title` with template, `description`), added `suppressHydrationWarning` on `<html>`, wrapped `{children}` with `<Providers>`.
+- `lib/api/client.ts` — Added `ApiError` stub class (with `status`, `code`, `details`) and `apiClient` singleton stub to unblock TypeScript imports ahead of Task 2.2.
+
+**Notes:**
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0)
+- `suppressHydrationWarning` on `<html>` prevents next-themes hydration mismatch
+- `Providers` is a `'use client'` boundary; root layout remains a Server Component
+
+---
+
 ## Task 1.4: Create Directory Structure ✅
 
 **Directories and files created:**

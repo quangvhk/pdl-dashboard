@@ -1,5 +1,29 @@
 # Pandalang — Completed Tasks
 
+## Task 9.4: Loading States ✅
+
+**Files created:**
+- `app/(dashboard)/dashboard/loading.tsx` — Dashboard-specific loading skeleton; welcome heading + 3 stat card skeletons + section heading + 3 continue-learning card skeletons; matches the role-aware dashboard layout.
+- `app/(dashboard)/courses/loading.tsx` — Reuses `PageSkeleton` (page header + 6-card grid skeleton); matches the course list page layout.
+- `app/(dashboard)/courses/[courseId]/loading.tsx` — Course detail loading skeleton; back link + 3-col thumbnail/meta grid + badge row + title + description + stats + CTA + 3 section accordion cards each with 3 lesson rows.
+- `app/(dashboard)/courses/[courseId]/edit/loading.tsx` — Course editor loading skeleton; page header with action buttons + course details card (title/description/level/thumbnail fields + save button) + section list with 2 sections each containing 2 lesson rows.
+- `app/(dashboard)/courses/[courseId]/enrollments/loading.tsx` — Enrollments view loading skeleton; page header + 4 stat cards + search input + `TableSkeleton` (8 rows × 5 columns).
+- `app/(dashboard)/enrollments/loading.tsx` — My enrollments loading skeleton; page header with badge + two grouped sections (In Progress / Completed) each with `CardGridSkeleton` (3 cards).
+- `app/(dashboard)/users/loading.tsx` — Users list loading skeleton; page header + search + role filter row + `TableSkeleton` (10 rows × 5 columns).
+- `app/(dashboard)/users/[userId]/loading.tsx` — User detail loading skeleton; page header + profile card (avatar + name + email + roles + meta grid) + edit profile card (name/avatar fields) + role management card (role badges + assign select).
+- `app/(dashboard)/tenants/loading.tsx` — Tenants list loading skeleton; page header + search input + `TableSkeleton` (10 rows × 5 columns).
+- `app/(dashboard)/tenants/[tenantId]/loading.tsx` — Tenant detail loading skeleton; page header + overview card (4 meta fields + 3 status action buttons) + settings card (name/slug/domain fields + save button).
+- `app/(dashboard)/settings/loading.tsx` — Settings loading skeleton; page header + profile card (avatar preview + name/email/avatar-url fields) + appearance card (3 theme option buttons) + account info card (3 read-only rows).
+
+**Notes:**
+- All `loading.tsx` files are pure Server Components (no `'use client'`) — Next.js App Router renders them automatically during route segment transitions and Suspense boundaries.
+- `app/(dashboard)/loading.tsx` (from Task 9.1) remains as the catch-all dashboard loading state; the new per-segment files provide more accurate layout-matched skeletons for each specific route.
+- `TableSkeleton` and `CardGridSkeleton` from `components/shared/loading-skeleton` are reused across multiple loading files — no new skeleton primitives needed.
+- Each skeleton mirrors the real page's visual structure (header → filters/stats → main content) to minimise layout shift when data loads.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 9.3: Responsive Polish ✅
 
 **Files modified:**

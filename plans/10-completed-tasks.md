@@ -1,5 +1,21 @@
 # Pandalang — Completed Tasks
 
+## Task 6.3: My Enrollments Page ✅
+
+**Files created:**
+- `features/enrollments/components/enrollment-card.tsx` — `EnrollmentCard` client component; accepts `enrollment`; renders thumbnail with `BookOpen` fallback; level badge overlay using `LEVEL_VARIANT` map; status badge overlay (`ACTIVE` → "In Progress" with `Clock` icon, `COMPLETED` → "Completed" with `CheckCircle2` icon, `DROPPED` → "Dropped" with `BookOpen` icon); enrolled date and completed date rows with icons; `Progress` bar showing `progressPercent`; footer CTA — "Continue Learning" button (primary) for active enrollments, "View Course" button (outline) for completed; `EnrollmentCardSkeleton` matches layout for loading states.
+- `features/enrollments/components/enrollment-list.tsx` — `EnrollmentList` client component; accepts `enrollments`, `isLoading`, `onBrowseCourses`; renders `EnrollmentCardSkeleton` grid (3 cards) while loading; renders `EmptyState` with `BookOpen` icon and optional "Browse Courses" CTA when empty; groups enrollments by `status` using `GROUP_CONFIG` (`ACTIVE` → "In Progress" order 0, `COMPLETED` → "Completed" order 1, `DROPPED` → "Dropped" order 2); renders each group as a `<section>` with heading + count pill + responsive 1/2/3-col `EnrollmentCard` grid; groups sorted by defined order so "In Progress" always appears first.
+- `app/(dashboard)/enrollments/page.tsx` — `'use client'` page; fetches enrollments via `useMyEnrollments`; derives `active` and `completed` counts for the `PageHeader` description; renders a `GraduationCap` total-count badge in the actions slot; shows an error banner on fetch failure; renders `EnrollmentList` with `onBrowseCourses` navigating to `/courses`.
+
+**Notes:**
+- `useMyEnrollments` is already defined in `features/enrollments/hooks/use-enrollments.ts` (Task 5.1) — no new hook needed.
+- `EnrollmentList` groups by `EnrollmentStatus` union type; TypeScript ensures exhaustive key handling via the `GROUP_CONFIG` record.
+- `EnrollmentCardSkeleton` uses plain `bg-muted` divs (no shadcn `Skeleton` import) to keep the component self-contained.
+- "Continue Learning" links to `/courses/[courseId]` (course detail page) — the course detail page handles routing to the last-visited lesson.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 6.2: Quiz Taker ✅
 
 **Files created:**

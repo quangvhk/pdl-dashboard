@@ -1,5 +1,27 @@
 # Pandalang — Completed Tasks
 
+## Task 6.2: Quiz Taker ✅
+
+**Files created:**
+- `features/quizzes/hooks/use-quiz.ts` — `quizzesQueryKeys` factory (`all`, `detail(id)`, `attempts(id)`); `useQuiz` query hook wrapping `quizzesService.getById`; enabled only when `quizId` is truthy; `staleTime` 2 minutes.
+- `features/quizzes/hooks/use-submit-quiz.ts` — `useSubmitQuiz` mutation hook; accepts `{ quizId, data: SubmitQuizRequest }`; wraps `quizzesService.submitAttempt`; invalidates `quizzesQueryKeys.attempts(quizId)` on settle so attempt history stays fresh.
+- `features/quizzes/hooks/use-quiz-attempts.ts` — `useQuizAttempts` query hook; wraps `quizzesService.listAttempts`; enabled only when `quizId` is truthy; `staleTime` 1 minute (attempts change after each submission).
+- `features/quizzes/schemas/quiz.schema.ts` — `submitAnswerSchema` Zod object (questionId + optional answerId/textAnswer with `.refine` requiring at least one); `submitQuizSchema` (enrollmentId + answers array min 1); exports `SubmitAnswerValues` and `SubmitQuizValues` inferred types.
+- `features/quizzes/components/quiz-question.tsx` — `QuizQuestion` client component; accepts `question`, `value`, `onChange`, `index`, `total`; renders `RadioGroup` of answer options for `MULTIPLE_CHOICE`/`TRUE_FALSE` (with hover + checked border highlight via `has-[[data-state=checked]]`); renders plain `Input` for `FILL_IN_BLANK`; shows question text, index/total header, and optional points label.
+- `features/quizzes/components/quiz-results.tsx` — `QuizResults` client component; accepts `quiz`, `attempt`, `courseId`, `onRetake`; shows score card with trophy/X icon, percentage display, colour-coded `Progress` bar, pass/fail `Badge`; renders attempt history list (sorted newest-first, latest highlighted) via `useQuizAttempts`; "Back to Course" link + "Try Again" button (shown only on fail); `QuizResultsSkeleton` matches layout.
+- `features/quizzes/components/quiz-taker.tsx` — `QuizTaker` client component; accepts `courseId`, `quizId`; fetches quiz via `useQuiz` and enrollment via `useMyEnrollments`; manages per-question answer map in local state; optional countdown timer (`setInterval`) initialised from `quiz.timeLimitMinutes` — auto-submits when time reaches 0, shows red badge when ≤60 s remain; dot-navigation row for jumping between questions; `QuizQuestion` renders current question; Previous/Next buttons; "Submit Quiz" button on last question opens `AlertDialog` confirmation showing answered/unanswered counts with warning for unanswered questions; on confirm calls `useSubmitQuiz` and transitions to `QuizResults`; error banner on submit failure; guards for loading, error, no-enrollment, no-questions states; `QuizTakerSkeleton` matches layout.
+- `app/(dashboard)/courses/[courseId]/quizzes/[quizId]/page.tsx` — `'use client'` page; unwraps `params` via React 19 `use(params)`; renders `<QuizTaker courseId={courseId} quizId={quizId} />`.
+
+**Notes:**
+- `quizzesQueryKeys` is defined in `use-quiz.ts` and re-exported/imported by `use-submit-quiz.ts` and `use-quiz-attempts.ts` to keep key factories co-located.
+- Timer uses `useRef` for the interval handle and clears it on component unmount, on quiz completion, and on retake to prevent memory leaks.
+- Dot navigation allows jumping to any question directly; answered dots are highlighted with `bg-primary/20`, current with `bg-primary`.
+- `AlertDialogDescription` uses `asChild` with a `<div>` to allow block-level content (unanswered warning paragraph) without hydration errors.
+- `QuizResults` shows attempt history only when there are >1 attempts (or while loading), keeping the UI clean for first-time takers.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 6.1: Lesson Viewer ✅
 
 **Files created:**

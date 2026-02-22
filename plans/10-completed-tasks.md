@@ -1,5 +1,20 @@
 # Pandalang — Completed Tasks
 
+## Task 7.3: Course Enrollments View (Instructor) ✅
+
+**Files created:**
+- `features/enrollments/hooks/use-course-enrollments.ts` — `useCourseEnrollments` query hook; extends `enrollmentsQueryKeys.byCourse(courseId)` with params in the query key; wraps `enrollmentsService.getCourseEnrollments`; accepts `search`, `page`, `limit` params; enabled only when `courseId` is truthy; `staleTime` 2 minutes.
+- `app/(dashboard)/courses/[courseId]/enrollments/page.tsx` — `'use client'` page; unwraps `params` via React 19 `use(params)`; role gate (Instructor/Admin/SuperAdmin only — students see `Lock` icon + "Access Restricted" message + "Back to Courses" button); fetches course via `useCourse` for the page title; fetches enrollments via `useCourseEnrollments` with controlled `search` + `page` state; renders 4 stat cards (Total / Active / Completed / Avg Progress) derived from the current page of enrollments; `DataTable<Enrollment>` with columns: Student (name + email), Status (`Badge` with `STATUS_VARIANT` map), Progress (`Progress` bar + percentage), Enrolled date, Completed date; built-in `searchable` with controlled `searchValue`/`onSearchChange` (resets page to 1 on search change); `Pagination` component with last-page heuristic (array length < `PAGE_SIZE` 20); error banner on fetch failure; "Back to Course" link in `PageHeader` actions slot.
+
+**Notes:**
+- `useCourseEnrollments` reuses `enrollmentsQueryKeys.byCourse` from `use-enrollments.ts` — no new key factory needed.
+- Stat cards (Total, Active, Completed, Avg Progress) are derived client-side from the current page data; they reflect the filtered/paginated subset, not global totals (consistent with the API not returning aggregate counts).
+- `DataTableColumn.cell` renders JSX for Student and Progress columns; sortable columns (student, status, enrolledAt, completedAt) use client-side sort built into `DataTable`.
+- Pagination uses the same heuristic as the course list page: if `enrollments.length < PAGE_SIZE`, it's the last page.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 7.2: Course Editor Page ✅
 
 **Files created:**

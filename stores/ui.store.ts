@@ -1,5 +1,31 @@
-// UI Store — placeholder for Task 2.4
-// Full implementation: sidebarOpen, sidebarCollapsed state + toggleSidebar/setSidebarOpen/toggleSidebarCollapsed actions
-// Persist to localStorage
+import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
-export {};
+interface UIState {
+  // State
+  sidebarOpen: boolean
+  sidebarCollapsed: boolean
+
+  // Actions
+  toggleSidebar: () => void
+  setSidebarOpen: (open: boolean) => void
+  toggleSidebarCollapsed: () => void
+}
+
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      sidebarOpen: true,
+      sidebarCollapsed: false,
+
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      toggleSidebarCollapsed: () =>
+        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+    }),
+    {
+      name: 'pandalang-ui',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+)

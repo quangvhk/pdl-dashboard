@@ -1,5 +1,35 @@
-// Tenant Store — placeholder for Task 2.4
-// Full implementation: tenantId, tenantSlug, tenantName state + setTenant/clearTenant actions
-// Persist to sessionStorage
+import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
-export {};
+interface TenantState {
+  // State
+  tenantId: string | null
+  tenantSlug: string | null
+  tenantName: string | null
+
+  // Actions
+  setTenant: (id: string, slug: string, name: string) => void
+  clearTenant: () => void
+}
+
+export const useTenantStore = create<TenantState>()(
+  persist(
+    (set) => ({
+      tenantId: null,
+      tenantSlug: null,
+      tenantName: null,
+
+      setTenant: (id, slug, name) => {
+        set({ tenantId: id, tenantSlug: slug, tenantName: name })
+      },
+
+      clearTenant: () => {
+        set({ tenantId: null, tenantSlug: null, tenantName: null })
+      },
+    }),
+    {
+      name: 'pandalang-tenant',
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
+)

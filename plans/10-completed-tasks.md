@@ -1,5 +1,20 @@
 # Pandalang — Completed Tasks
 
+## Task 2.4: Zustand Stores ✅
+
+**Files updated:**
+- `stores/auth.store.ts` — `useAuthStore` with state: `accessToken`, `refreshToken`, `user`, `isInitialized`; computed `isAuthenticated` getter; actions: `login` (stores tokens + user + sets `auth-status` cookie), `setTokens`, `setUser`, `logout` (clears state + cookie), `setInitialized`; persists `refreshToken` and `user` to `sessionStorage` via `pandalang-auth` key; `accessToken` stays in memory only (not persisted).
+- `stores/tenant.store.ts` — `useTenantStore` with state: `tenantId`, `tenantSlug`, `tenantName`; actions: `setTenant`, `clearTenant`; persists all fields to `sessionStorage` via `pandalang-tenant` key.
+- `stores/ui.store.ts` — `useUIStore` with state: `sidebarOpen` (default `true`), `sidebarCollapsed` (default `false`); actions: `toggleSidebar`, `setSidebarOpen`, `toggleSidebarCollapsed`; persists to `localStorage` via `pandalang-ui` key.
+
+**Notes:**
+- All stores use `zustand/middleware` `persist` + `createJSONStorage`.
+- `login` and `logout` in auth store guard `document.cookie` access with `typeof document !== 'undefined'` for SSR safety.
+- `partialize` on auth store ensures only `refreshToken` + `user` are written to `sessionStorage`; `accessToken` is never persisted.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 2.3: API Service Functions ✅
 
 **Files created:**

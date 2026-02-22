@@ -1,5 +1,32 @@
 # Pandalang — Completed Tasks
 
+## Task 9.2: Toast Notifications ✅
+
+**Files modified:**
+- `app/layout.tsx` — Added `<Toaster richColors position="top-right" />` from `@/components/ui/sonner` inside `<body>` (outside `<Providers>` so it is always mounted).
+- `features/auth/hooks/use-login.ts` — `onSuccess`: `toast.success('Welcome back!')` with user name description; `onError`: `toast.error('Sign in failed')`.
+- `features/auth/hooks/use-register.ts` — `onSuccess`: `toast.success('Account created!')` with welcome message; `onError`: `toast.error('Registration failed')`.
+- `features/auth/hooks/use-logout.ts` — `onSettled`: `toast.success('Signed out successfully')` (fires before redirect).
+- `features/courses/hooks/use-create-course.ts` — `onSuccess`: `toast.success('Course created!')` with title; `onError`: `toast.error`.
+- `features/courses/hooks/use-update-course.ts` — `useUpdateCourse`: success/error toasts; `usePublishCourse`: "Course published!" toast; `useArchiveCourse`: "Course archived" toast; `useDeleteCourse`: "Course deleted" toast; all with `onError` fallback.
+- `features/enrollments/hooks/use-enroll.ts` — `onSuccess`: `toast.success('Enrolled successfully!')` with CTA hint; `onError`: `toast.error`.
+- `features/enrollments/hooks/use-update-progress.ts` — `onSuccess`: `toast.success('Lesson completed!')` with progress saved note; `onError`: `toast.error` (after optimistic rollback).
+- `features/quizzes/hooks/use-submit-quiz.ts` — `onSuccess`: `toast.success('Quiz passed! 🎉')` with score when passed, `toast.info('Quiz submitted')` with score when failed; `onError`: `toast.error`.
+- `features/users/hooks/use-create-user.ts` — `onSuccess`: `toast.success('User created!')` with full name; `onError`: `toast.error`.
+- `features/users/hooks/use-assign-role.ts` — `useAssignRole.onSuccess`: "Role assigned" toast; `useRemoveRole.onSuccess`: "Role removed" toast; both with `onError`.
+- `features/users/components/user-detail.tsx` — `updateMutation.onSuccess`: "Profile updated" toast; `updateMutation.onError`: error toast (in addition to inline banner); `deactivateMutation.onSuccess`: "Account deactivated" toast; `deactivateMutation.onError`: error toast.
+- `features/tenants/hooks/use-create-tenant.ts` — `onSuccess`: `toast.success('Tenant created!')` with name; `onError`: `toast.error`.
+- `features/tenants/components/tenant-detail.tsx` — `updateMutation.onSuccess`: "Tenant updated" toast; `updateMutation.onError`: error toast (+ inline banner); `statusMutation.onSuccess`: dynamic label ("activated" / "set to Trial" / "suspended") toast; `statusMutation.onError`: error toast.
+
+**Notes:**
+- `<Toaster>` from `components/ui/sonner` uses `next-themes` `useTheme` internally — it automatically matches the active light/dark/system theme.
+- `toast.info` is used for quiz submission when the student fails (not an error, just informational feedback).
+- `useLogout` uses `onSettled` (not `onSuccess`) — the toast fires even if the server logout endpoint fails, consistent with always clearing local state.
+- `useUpdateProgress` `onSuccess` toast fires before `onSettled` invalidation — the "Lesson completed!" message appears immediately.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 9.1: Error Pages ✅
 
 **Files created:**

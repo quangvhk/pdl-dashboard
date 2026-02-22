@@ -1,5 +1,17 @@
 # Pandalang — Completed Tasks
 
+## Task 3.1: Auth Layout ✅
+
+**Files created:**
+- `app/(auth)/layout.tsx` — Auth route-group layout; full-viewport centered flex column (`min-h-svh`, `bg-muted/40`); constrains content to `max-w-sm`; renders Pandalang 🐼 logo icon (rounded `bg-primary` tile) + "Pandalang" wordmark above `{children}`; no sidebar, no header; exports `metadata` with `title.template` for auth pages.
+
+**Notes:**
+- Uses Next.js App Router route group `(auth)` — does not affect URL paths.
+- Branding block is purely presentational (emoji + text); no extra image assets required.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 2.6: Next.js Middleware ✅
 
 **Files created:**

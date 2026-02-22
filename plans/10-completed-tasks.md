@@ -1,5 +1,23 @@
 # Pandalang — Completed Tasks
 
+## Task 6.1: Lesson Viewer ✅
+
+**Files created:**
+- `features/courses/hooks/use-lessons.ts` — `useLessons` query hook; `lessonsQueryKeys` factory (`all`, `bySection(courseId, sectionId)`, `detail(courseId, sectionId, lessonId)`); nested under `sectionsQueryKeys.byCourse`; wraps `lessonsService.list`; enabled only when both `courseId` and `sectionId` are truthy; `staleTime` 2 minutes. Also exports `useLesson` for single-lesson fetch via `lessonsService.getById`; enabled only when all three IDs are truthy.
+- `features/enrollments/hooks/use-update-progress.ts` — `useUpdateProgress` mutation hook; wraps `enrollmentsService.updateProgress`; accepts `{ enrollmentId, data: UpdateProgressRequest }`; implements optimistic update pattern — cancels in-flight queries, snapshots previous enrollment list, rolls back on error; always invalidates `enrollmentsQueryKeys.mine()` on settle to sync authoritative server state.
+- `features/courses/components/lesson-viewer.tsx` — `LessonViewer` client component; accepts `courseId`, `sectionId`, `lessonId`; fetches course, sections, lessons list, single lesson, and enrollments; renders a two-panel layout: collapsible sidebar (`SectionOutline`) with course progress bar + section/lesson tree (each section fetches its lessons via `useLessons`), and main content area with lesson header, scrollable `ContentRenderer`, and footer navigation. `ContentRenderer` handles four content types: `VIDEO` (YouTube/Vimeo embed via iframe, or direct `<video>`), `AUDIO` (`<audio>` player with metadata), `DOCUMENT` (download link), `TEXT` (prose paragraphs). Footer has Previous/Next buttons (cross-section aware), time-spent counter (live `setInterval`), and "Mark Complete" button (calls `useUpdateProgress`, navigates to next lesson/section/course on success). Sidebar hidden on mobile; mobile shows inline progress bar in footer. `LessonViewerSkeleton` matches final layout to prevent shift.
+- `app/(dashboard)/courses/[courseId]/sections/[sectionId]/lessons/[lessonId]/page.tsx` — `'use client'` page; unwraps `params` via React 19 `use(params)`; renders `<LessonViewer courseId={courseId} sectionId={sectionId} lessonId={lessonId} />`.
+
+**Notes:**
+- `useLessons` is called per-section inside `SectionOutlineItem` so the sidebar lazily loads lesson lists only for expanded sections.
+- `useUpdateProgress` uses optimistic update with rollback — the enrollment list is snapshotted before mutation and restored on error; `onSettled` always refetches for authoritative state.
+- "Mark Complete" navigates automatically: next lesson in section → first lesson of next section → course detail page (course complete).
+- Previous/Next navigation is section-aware: at section boundaries it navigates to the adjacent section's lessons route.
+- Time-spent counter resets on `lessonId` change via `useEffect` dependency.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 5.3: Course Detail Page ✅
 
 **Files created:**

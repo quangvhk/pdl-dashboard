@@ -1,5 +1,19 @@
 # Pandalang — Completed Tasks
 
+## Task 4.1: Auth Schemas ✅
+
+**Files created:**
+- `features/auth/schemas/login.schema.ts` — `loginSchema` Zod object; validates `email` (required + valid email format), `password` (min 1 char), `tenantSlug` (min 1 char); exports `LoginFormValues` inferred type.
+- `features/auth/schemas/register.schema.ts` — `registerSchema` Zod object; validates `firstName` (min 1), `lastName` (min 1), `email` (required + valid email), `password` (min 8 chars + uppercase + lowercase + digit regex rules), `tenantSlug` (min 1); exports `RegisterFormValues` inferred type.
+
+**Notes:**
+- Both schemas use `zod` v4 imported from `'zod'`.
+- Password strength rules on `registerSchema`: min 8 chars, at least one uppercase letter (`/[A-Z]/`), one lowercase letter (`/[a-z]/`), one digit (`/[0-9]/`).
+- Inferred form value types (`LoginFormValues`, `RegisterFormValues`) exported for use with `react-hook-form` + `@hookform/resolvers/zod`.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 3.3: Shared Components ✅
 
 **Files created:**

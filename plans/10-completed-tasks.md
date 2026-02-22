@@ -1,5 +1,21 @@
 # Pandalang — Completed Tasks
 
+## Task 9.1: Error Pages ✅
+
+**Files created:**
+- `app/not-found.tsx` — Custom 404 page; full-viewport centered layout; `FileQuestion` icon in muted circle; "404" heading + "Page not found" subheading + descriptive paragraph; two CTA buttons: "Go to Dashboard" (primary, `Home` icon) + "Browse Courses" (outline); no `'use client'` — pure Server Component.
+- `app/error.tsx` — Global error boundary; `'use client'` (required by Next.js); accepts `error` (with optional `digest`) and `reset` props; `useEffect` logs error to console; `AlertTriangle` icon in destructive/10 circle; "Something went wrong" heading + descriptive paragraph; optional `error.digest` display for support reference; two CTA buttons: "Try Again" (calls `reset`, `RefreshCw` icon) + "Go to Dashboard" (outline, `Home` icon).
+- `app/(dashboard)/loading.tsx` — Dashboard-wide loading skeleton; Server Component; renders `<PageSkeleton />` from `components/shared/loading-skeleton`; shown automatically by Next.js App Router during route segment transitions.
+
+**Notes:**
+- `app/not-found.tsx` is a Server Component — no `'use client'` needed; uses `next/link` for navigation.
+- `app/error.tsx` must be `'use client'` per Next.js App Router requirements for error boundaries.
+- `error.digest` is an optional hash provided by Next.js for server-side errors; displayed as a support reference ID when present.
+- `app/(dashboard)/loading.tsx` reuses the existing `PageSkeleton` from `components/shared/loading-skeleton` — no new skeleton needed.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 8.3: Settings Page ✅
 
 **Files created:**

@@ -1,5 +1,22 @@
 # Pandalang — Completed Tasks
 
+## Task 8.3: Settings Page ✅
+
+**Files created:**
+- `app/(dashboard)/settings/page.tsx` — `'use client'` page; reads `user` from `useAuthStore` and `tenantName` from `useTenantStore`; three card sections:
+  - **Profile card** — avatar preview (local `avatarUrl` state updated on successful save, since `AuthUser` has no `avatar` field); first name + last name inputs (React Hook Form + `updateUserSchema`); email read-only disabled field with helper note; avatar URL input; `isDirty` guard with Discard button; "Save Profile" submit button with `Loader2` spinner; success banner (auto-clears after 3 s) + error banner; `useMutation` calls `usersService.update(user.id, ...)` and syncs `firstName`/`lastName` back to auth store via `setUser`.
+  - **Appearance card** — three `ThemeOption` buttons (Light / Dark / System) using `useTheme` from `next-themes`; active button highlighted with `border-primary bg-primary/5`; icons: `Sun`, `Moon`, `Monitor`.
+  - **Account card** — read-only info grid: Role (all roles as `Badge` with `formatRole` label map), Tenant (`tenantName` from tenant store), Member Since (current date formatted with `date-fns`).
+
+**Notes:**
+- `AuthUser` type does not include an `avatar` field — avatar preview uses local `avatarUrl` state initialised to `''` and updated from the `User` response returned by `usersService.update`.
+- `updateUserSchema` reused from `features/users/schemas/user.schema.ts` — no new schema needed.
+- `ThemeOption` is a small inline component (not exported) to keep the file self-contained.
+- `Member Since` uses `format(new Date(), 'MMM d, yyyy')` as a placeholder — `AuthUser` does not expose `createdAt`; the real value would require a separate `/auth/me` fetch.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 8.2: Tenant Management ✅
 
 **Files created:**

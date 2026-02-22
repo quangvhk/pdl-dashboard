@@ -1,5 +1,30 @@
 # Pandalang — Completed Tasks
 
+## Task 7.2: Course Editor Page ✅
+
+**Files created:**
+- `features/courses/hooks/use-update-course.ts` — Exports four mutation hooks: `useUpdateCourse` (patches course metadata, updates detail cache + invalidates lists), `usePublishCourse` (calls `coursesService.publish`, updates cache), `useArchiveCourse` (calls `coursesService.archive`, updates cache), `useDeleteCourse` (removes detail cache entry + invalidates lists).
+- `features/courses/schemas/section.schema.ts` — `sectionSchema` Zod object; validates `title` (required, max 200 chars), `description` (optional, max 1000 chars); exports `SectionFormValues` inferred type.
+- `features/courses/schemas/lesson.schema.ts` — `lessonSchema` Zod object; validates `title` (required, max 200 chars), `contentType` (enum `TEXT`|`VIDEO`|`AUDIO`|`DOCUMENT`), `content` (optional, max 50000 chars), `mediaUrl` (optional valid URL or empty string), `durationMinutes` (optional int 1–600); exports `LessonFormValues` inferred type.
+- `features/quizzes/schemas/question.schema.ts` — `answerSchema` (id optional, answer text, isCorrect bool, sortOrder optional); `questionSchema` with `.refine` requiring at least one correct answer for non-fill-in-blank types; `quizSchema` (title, description, passingScore 0–100, timeLimitMinutes nullable); exports `AnswerFormValues`, `QuestionFormValues`, `QuizFormValues` inferred types.
+- `features/courses/components/course-builder/sortable-item.tsx` — `SortableItem` client component; wraps `useSortable` from `@dnd-kit/sortable`; renders a `GripVertical` drag handle via `setActivatorNodeRef`; applies `CSS.Transform.toString` + `transition` inline styles; `isDragging` adds `z-50 opacity-80 shadow-lg`; `disabled` prop disables drag and grays handle.
+- `features/courses/components/course-builder/section-form.tsx` — `SectionForm` dialog; add/edit mode detected by `section` prop; React Hook Form + `sectionSchema`; `useEffect` populates form on open; `useMutation` calls `sectionsService.create` or `sectionsService.update`; invalidates `sectionsQueryKeys.byCourse(courseId)` on success.
+- `features/courses/components/course-builder/lesson-form.tsx` — `LessonForm` dialog; add/edit mode; React Hook Form + `lessonSchema`; `contentType` select controls which secondary field is shown (content textarea for TEXT, mediaUrl input for VIDEO/AUDIO/DOCUMENT); `useMutation` calls `lessonsService.create` or `lessonsService.update`; invalidates `lessonsQueryKeys.bySection(courseId, sectionId)` on success.
+- `features/quizzes/components/quiz-form.tsx` — `QuizForm` dialog; add/edit mode; React Hook Form + `quizSchema`; fields: title, description, passingScore, timeLimitMinutes; `useMutation` calls `quizzesService.create(courseId, sectionId, ...)` or `quizzesService.update(quiz.id, ...)`; invalidates `sectionsQueryKeys.byCourse(courseId)` on success.
+- `features/quizzes/components/question-form.tsx` — `QuestionForm` dialog; add/edit mode; React Hook Form + `useFieldArray` for dynamic answers; `questionType` select auto-replaces answers array for `TRUE_FALSE` (fixed True/False options) and `FILL_IN_BLANK` (single correct-answer input); `MULTIPLE_CHOICE` allows up to 6 answers with add/remove; correct-answer checkboxes; `useMutation` calls `quizzesService.addQuestion` or `quizzesService.updateQuestion`; invalidates `quizzesQueryKeys.detail(quizId)` on success.
+- `features/courses/components/course-builder/lesson-list.tsx` — `LessonList` client component; accepts `courseId`, `sectionId`, `quizzes`; fetches lessons via `useLessons`; renders sortable lesson rows with content-type icon + badge + duration + edit/delete buttons; renders quiz rows with question count badge + add-question/edit/delete buttons; DnD reorder via `@dnd-kit` with optimistic update + `lessonsService.update(sortOrder)`; `LessonForm`, `QuizForm`, `QuestionForm` dialogs wired inline; `AlertDialog` confirmations for delete lesson and delete quiz.
+- `features/courses/components/course-builder/section-list.tsx` — `SectionList` client component; accepts `courseId`; fetches sections via `useSections`; renders sortable `SectionItem` rows each with expand/collapse toggle, lesson count badge, edit/delete buttons, and `LessonList` child; DnD reorder with optimistic update + `sectionsService.update(sortOrder)`; `SectionForm` dialog + `AlertDialog` delete confirmation; "Add Section" button at bottom.
+- `app/(dashboard)/courses/[courseId]/edit/page.tsx` — `'use client'` page; unwraps `params` via React 19 `use(params)`; role gate (Instructor/Admin/SuperAdmin only — students see `Lock` icon + "Back to Courses"); fetches course via `useCourse`; populates edit form via `useEffect` + `reset`; Course Details card with title/description/level/thumbnail form + "Save Changes" button (disabled when not dirty); status badge + Publish/Archive/Delete action buttons in `PageHeader` actions slot; Delete uses `AlertDialog` confirmation then navigates to `/courses`; `SectionList` below the details card.
+
+**Notes:**
+- `useDeleteCourse` mutation accepts `undefined` as `mutationFn` argument (no payload needed); `onSuccess` callback passed at call site to navigate to `/courses`.
+- `@dnd-kit/modifiers` is not installed; vertical-axis restriction is omitted (DnD works without it).
+- `quizSchema` and `questionSchema` are co-located in `features/quizzes/schemas/question.schema.ts` for cohesion.
+- `LessonList` receives `quizzes` as a prop from `SectionItem` — quizzes are fetched as part of the sections list (via `section.quizzes` if populated) or passed empty; quiz CRUD invalidates `sectionsQueryKeys.byCourse` to refresh counts.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 7.1: Create Course Page ✅
 
 **Files created:**

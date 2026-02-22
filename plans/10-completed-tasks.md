@@ -1,5 +1,42 @@
 # Pandalang — Completed Tasks
 
+## Task 1.4: Create Directory Structure ✅
+
+**Directories and files created:**
+
+- `lib/api/client.ts` — Placeholder for API client (Task 2.2)
+- `lib/api/endpoints.ts` — Placeholder for API endpoint constants (Task 2.2)
+- `lib/api/types.ts` — Placeholder for API response envelope types (Task 2.2)
+- `lib/api/services/` — Placeholder directory for service functions (Task 2.3)
+- `types/api.ts` — Placeholder for `ApiResponse<T>`, `PaginatedResponse<T>`, etc. (Task 2.1)
+- `types/auth.ts` — Placeholder for `AuthUser`, `AuthResponse`, etc. (Task 2.1)
+- `types/course.ts` — Placeholder for `Course`, `Section`, `Lesson`, etc. (Task 2.1)
+- `types/enrollment.ts` — Placeholder for `Enrollment`, `EnrollmentStatus`, etc. (Task 2.1)
+- `types/quiz.ts` — Placeholder for `Quiz`, `QuizQuestion`, `QuizAttempt`, etc. (Task 2.1)
+- `types/user.ts` — Placeholder for `User`, `Role`, etc. (Task 2.1)
+- `types/tenant.ts` — Placeholder for `Tenant`, `TenantStatus`, etc. (Task 2.1)
+- `types/index.ts` — Barrel export placeholder (Task 2.1)
+- `stores/auth.store.ts` — Placeholder for Zustand auth store (Task 2.4)
+- `stores/tenant.store.ts` — Placeholder for Zustand tenant store (Task 2.4)
+- `stores/ui.store.ts` — Placeholder for Zustand UI store (Task 2.4)
+- `hooks/` — Placeholder directory for shared hooks
+- `components/layout/` — Placeholder directory for layout components (Task 3.2)
+- `components/shared/` — Placeholder directory for shared components (Task 3.3)
+- `components/providers/` — Placeholder directory for provider components (Task 1.5)
+- `features/auth/{components,hooks,schemas}/` — Auth feature subdirectories
+- `features/courses/{components,hooks,schemas}/` — Courses feature subdirectories
+- `features/enrollments/{components,hooks,schemas}/` — Enrollments feature subdirectories
+- `features/quizzes/{components,hooks,schemas}/` — Quizzes feature subdirectories
+- `features/users/{components,hooks,schemas}/` — Users feature subdirectories
+- `features/tenants/{components,hooks,schemas}/` — Tenants feature subdirectories
+
+**Notes:**
+- All `.ts` files contain `export {}` placeholder with comments describing full implementation
+- All empty directories use `.gitkeep` to be tracked by git
+- TypeScript compiles with no errors (placeholder files use `export {}`)
+
+---
+
 ## Task 1.3: Environment Configuration ✅
 
 **Files created/updated:**

@@ -1,5 +1,19 @@
 # Pandalang — Completed Tasks
 
+## Task 2.2: API Client ✅
+
+**Files updated:**
+- `lib/api/client.ts` — Full `ApiClient` class with `get`, `post`, `patch`, `put`, `delete` methods; auto-injects `Authorization: Bearer <token>` from auth store; auto-injects `x-tenant-id` header from tenant store; handles 401 with single automatic token refresh via `/api/v1/auth/refresh`; `buildUrl` helper appends query params; `handleResponse` unwraps API envelope (`data.data`) and normalises errors; `ApiError` custom error class with `status`, `code`, `details`; exports singleton `apiClient` instance.
+- `lib/api/endpoints.ts` — All API endpoint constants in `ENDPOINTS` object organised by feature: `auth`, `tenants`, `users`, `courses`, `sections`, `lessons`, `quizzes`, `enrollments`, `health`. Static paths as string literals; dynamic paths as typed functions `(id: string) => string`.
+
+**Notes:**
+- Store access uses lazy `require()` inside getter functions to avoid circular dependency issues while `stores/auth.store.ts` and `stores/tenant.store.ts` are still placeholders (Task 2.4); falls back gracefully to `null` when stores are not yet initialised.
+- `onTokenRefresh` calls the refresh endpoint directly with `fetch` (no `apiClient`) to prevent infinite recursion.
+- `onAuthError` calls `logout()` on the auth store and redirects to `/login` (guarded by `typeof window !== 'undefined'` for SSR safety).
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0)
+
+---
+
 ## Task 2.1: TypeScript Types ✅
 
 **Files updated:**

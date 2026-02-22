@@ -1,5 +1,21 @@
 # Pandalang — Completed Tasks
 
+## Task 5.2: Course List Page ✅
+
+**Files created/updated:**
+- `features/courses/components/course-list.tsx` — `CourseList` client component; accepts `courses`, `isLoading`, `showStatus`, `emptyTitle`, `emptyDescription`, `onEmptyAction`, `emptyActionLabel`; renders `CardGridSkeleton` (count 6) while loading; renders `EmptyState` with `BookOpen` icon when empty (optional CTA via `onEmptyAction`); renders responsive 1/2/3-col `CourseCard` grid when data is present.
+- `app/(dashboard)/courses/page.tsx` — `'use client'` courses list page; reads `user.roles` from `useAuthStore`; derives `isInstructor`, `isAdmin`, `isStudent`, `canCreate`, `showStatus` flags; URL state via `nuqs` (`useQueryState`) for `search` (string), `level` (string, default `'ALL'`), `status` (string, default `'ALL'`), `page` (integer, default 1); builds `queryParams` for `useCourses` — students always receive `status: 'PUBLISHED'`, others use the filter; renders `PageHeader` with "+ New Course" button (role-gated to Instructor/Admin); search `Input` with `Search` icon; `Select` for level filter (All/Beginner/Intermediate/Advanced); `Select` for status filter (hidden for students); `CourseList` with context-aware empty state messages; `Pagination` component with last-page heuristic (array length < PAGE_SIZE); all filter changes reset `page` to 1.
+- `components/providers/providers.tsx` — Updated to wrap the entire provider tree with `NuqsAdapter` from `'nuqs/adapters/next/app'` (required for `useQueryState` in Next.js App Router).
+
+**Notes:**
+- `nuqs` v2 requires `NuqsAdapter` in the provider tree; added as the outermost wrapper in `Providers`.
+- Pagination uses a heuristic: if the returned array length is less than `PAGE_SIZE` (9), it's the last page; `totalPages` is set to `page` (last) or `page + 1` (more pages exist). This avoids needing a `PaginatedResponse` wrapper from the API.
+- Students see only `PUBLISHED` courses regardless of the status filter (filter UI hidden for students).
+- `showStatus` badge on `CourseCard` is enabled for Instructor and Admin roles.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 5.1: Dashboard Page ✅
 
 **Files created:**

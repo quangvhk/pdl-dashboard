@@ -1,0 +1,3404 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Email already exists in this tenant"
+          }
+        },
+        "summary": "Register a new student account",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials or account locked"
+          }
+        },
+        "summary": "Login with email, password, and tenant slug",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New token pair issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired refresh token"
+          }
+        },
+        "summary": "Refresh access token using refresh token (single-use rotation)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Logged out successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Logout — revoke refresh tokens and blacklist access token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_getMe_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current user profile"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get current authenticated user profile",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/tenants": {
+      "post": {
+        "operationId": "TenantsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tenant created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug already taken"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a new tenant (Super Admin only)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "get": {
+        "operationId": "TenantsController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "example": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "asc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated tenant list"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all tenants (Super Admin only)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/tenants/{id}": {
+      "get": {
+        "operationId": "TenantsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get tenant by ID (Super Admin or own Tenant Admin)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "patch": {
+        "operationId": "TenantsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update tenant settings (Super Admin or own Tenant Admin)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/tenants/{id}/status": {
+      "patch": {
+        "operationId": "TenantsController_updateStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update tenant status — suspend/activate (Super Admin only)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "post": {
+        "operationId": "UsersController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already exists in this tenant"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a new user in the tenant (Tenant Admin only)",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "operationId": "UsersController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "example": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "asc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by name or email",
+            "schema": {
+              "example": "john",
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by role UUID",
+            "schema": {
+              "example": "role-uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by active status",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated user list"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List users in the tenant (Tenant Admin only)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "operationId": "UsersController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get user by ID (Tenant Admin or self)",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update user profile (Tenant Admin or self)",
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_deactivate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deactivated"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Deactivate user (soft delete, Tenant Admin only)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{id}/roles": {
+      "post": {
+        "operationId": "UsersController_assignRole_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role assigned"
+          },
+          "409": {
+            "description": "User already has this role"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Assign a role to a user (Tenant Admin only)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{id}/roles/{roleId}": {
+      "delete": {
+        "operationId": "UsersController_removeRole_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role removed"
+          },
+          "404": {
+            "description": "User does not have this role"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Remove a role from a user (Tenant Admin only)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/courses": {
+      "post": {
+        "operationId": "CoursesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Course created in DRAFT status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a new course (Instructor or Tenant Admin)",
+        "tags": [
+          "courses"
+        ]
+      },
+      "get": {
+        "operationId": "CoursesController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "example": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "asc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by title or description",
+            "schema": {
+              "example": "mandarin",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "PUBLISHED",
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "PUBLISHED",
+                "ARCHIVED"
+              ]
+            }
+          },
+          {
+            "name": "level",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "BEGINNER",
+              "type": "string",
+              "enum": [
+                "BEGINNER",
+                "INTERMEDIATE",
+                "ADVANCED"
+              ]
+            }
+          },
+          {
+            "name": "instructorId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by instructor UUID",
+            "schema": {
+              "example": "instructor-uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-request-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated course list"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List courses (role-filtered: students see PUBLISHED only)",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/api/v1/courses/{id}": {
+      "get": {
+        "operationId": "CoursesController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get course by ID with sections and lesson counts",
+        "tags": [
+          "courses"
+        ]
+      },
+      "patch": {
+        "operationId": "CoursesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Course updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — not course owner"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update course (Instructor own course or Tenant Admin)",
+        "tags": [
+          "courses"
+        ]
+      },
+      "delete": {
+        "operationId": "CoursesController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Delete course (Instructor own course or Tenant Admin)",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/api/v1/courses/{id}/publish": {
+      "patch": {
+        "operationId": "CoursesController_publish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course published",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Course has no sections or lessons"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Publish course — requires at least 1 section and 1 lesson",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/api/v1/courses/{id}/archive": {
+      "patch": {
+        "operationId": "CoursesController_archive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Archive course",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/api/v1/courses/{courseId}/sections": {
+      "post": {
+        "operationId": "SectionsController_create_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Section created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a section in a course (Instructor or Tenant Admin)",
+        "tags": [
+          "sections"
+        ]
+      },
+      "get": {
+        "operationId": "SectionsController_findAll_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SectionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all sections in a course",
+        "tags": [
+          "sections"
+        ]
+      }
+    },
+    "/api/v1/courses/{courseId}/sections/{id}": {
+      "patch": {
+        "operationId": "SectionsController_update_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Section updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update a section (Instructor or Tenant Admin)",
+        "tags": [
+          "sections"
+        ]
+      },
+      "delete": {
+        "operationId": "SectionsController_remove_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Delete a section (Instructor or Tenant Admin)",
+        "tags": [
+          "sections"
+        ]
+      }
+    },
+    "/api/v1/courses/{courseId}/sections/{sectionId}/lessons": {
+      "post": {
+        "operationId": "LessonsController_create_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLessonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Lesson created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a lesson in a section (Instructor or Tenant Admin)",
+        "tags": [
+          "lessons"
+        ]
+      },
+      "get": {
+        "operationId": "LessonsController_findAll_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lesson list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LessonResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all lessons in a section",
+        "tags": [
+          "lessons"
+        ]
+      }
+    },
+    "/api/v1/courses/{courseId}/sections/{sectionId}/lessons/{id}": {
+      "get": {
+        "operationId": "LessonsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lesson details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lesson not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get a single lesson by ID",
+        "tags": [
+          "lessons"
+        ]
+      },
+      "patch": {
+        "operationId": "LessonsController_update_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLessonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lesson updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update a lesson (Instructor or Tenant Admin)",
+        "tags": [
+          "lessons"
+        ]
+      },
+      "delete": {
+        "operationId": "LessonsController_remove_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lesson deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Delete a lesson (Instructor or Tenant Admin)",
+        "tags": [
+          "lessons"
+        ]
+      }
+    },
+    "/api/v1/quizzes/{id}": {
+      "get": {
+        "operationId": "QuizzesController_findById_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quiz details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Quiz not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get quiz by ID (students see answers without isCorrect)",
+        "tags": [
+          "quizzes"
+        ]
+      },
+      "patch": {
+        "operationId": "QuizzesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuizDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quiz updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update quiz (Instructor or Tenant Admin)",
+        "tags": [
+          "quizzes"
+        ]
+      },
+      "delete": {
+        "operationId": "QuizzesController_delete_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quiz deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Delete quiz (Instructor or Tenant Admin)",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/api/v1/quizzes/{id}/questions": {
+      "post": {
+        "operationId": "QuizzesController_addQuestion_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Question added"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Add a question with answers to a quiz",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/api/v1/quizzes/{id}/questions/{qId}": {
+      "patch": {
+        "operationId": "QuizzesController_updateQuestion_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "qId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Question updated"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update a question (replaces all answers if provided)",
+        "tags": [
+          "quizzes"
+        ]
+      },
+      "delete": {
+        "operationId": "QuizzesController_deleteQuestion_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "qId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Delete a question from a quiz",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/api/v1/quizzes/{id}/attempts": {
+      "post": {
+        "operationId": "QuizzesController_submitAttempt_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitQuizDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Attempt graded and stored"
+          },
+          "403": {
+            "description": "Not enrolled in this course"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Submit a quiz attempt (enrolled students only)",
+        "tags": [
+          "quizzes"
+        ]
+      },
+      "get": {
+        "operationId": "QuizzesController_listAttempts_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attempt list"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List quiz attempts (students see own, instructors/admins see all)",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/api/v1/courses/{cId}/sections/{sId}/quizzes": {
+      "post": {
+        "operationId": "CourseQuizzesController_create_v1",
+        "parameters": [
+          {
+            "name": "cId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuizDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Quiz created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a quiz in a course section (Instructor or Tenant Admin)",
+        "tags": [
+          "quizzes"
+        ]
+      }
+    },
+    "/api/v1/enrollments": {
+      "post": {
+        "operationId": "EnrollmentsController_enroll_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEnrollmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Enrollment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already enrolled in this course"
+          },
+          "422": {
+            "description": "Course is not published"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Enroll in a course (students only)",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/enrollments/me": {
+      "get": {
+        "operationId": "EnrollmentsController_getMyEnrollments_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User enrollment list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnrollmentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all enrollments for the current user",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/enrollments/{id}": {
+      "get": {
+        "operationId": "EnrollmentsController_getEnrollmentDetail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enrollment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cannot view another student's enrollment"
+          },
+          "404": {
+            "description": "Enrollment not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get enrollment detail (students see own, instructors/admins see all)",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/courses/{courseId}/enrollments": {
+      "get": {
+        "operationId": "CourseEnrollmentsController_getCourseEnrollments_v1",
+        "parameters": [
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course enrollment list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnrollmentResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — not course owner or admin"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all enrollments for a course (Instructor own course, Tenant Admin, Super Admin)",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/enrollments/{id}/progress": {
+      "post": {
+        "operationId": "ProgressController_updateProgress_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProgressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Progress updated, enrollment progress recalculated"
+          },
+          "403": {
+            "description": "Not your enrollment"
+          },
+          "404": {
+            "description": "Enrollment or lesson not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update lesson progress for an enrollment (recalculates overall progress)",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_liveness_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service is alive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "timestamp": "2026-01-01T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Liveness probe — always 200 if process is running",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/health/ready": {
+      "get": {
+        "operationId": "HealthController_readiness_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "All dependencies healthy"
+          },
+          "503": {
+            "description": "One or more dependencies unhealthy"
+          }
+        },
+        "summary": "Readiness probe — checks PostgreSQL and Redis connectivity",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Pandalang API",
+    "description": "Backend API for Pandalang EdTech SaaS multi-tenant platform. Provides authentication, tenant management, course management, enrollments, quizzes, and progress tracking.",
+    "version": "1",
+    "contact": {
+
+    }
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Authentication — register, login, refresh, logout"
+    },
+    {
+      "name": "tenants",
+      "description": "Tenant management (Super Admin)"
+    },
+    {
+      "name": "users",
+      "description": "User management within a tenant"
+    },
+    {
+      "name": "courses",
+      "description": "Course catalog management"
+    },
+    {
+      "name": "sections",
+      "description": "Course section management"
+    },
+    {
+      "name": "lessons",
+      "description": "Lesson management within sections"
+    },
+    {
+      "name": "quizzes",
+      "description": "Quiz management and submissions"
+    },
+    {
+      "name": "enrollments",
+      "description": "Student enrollment and progress tracking"
+    },
+    {
+      "name": "health",
+      "description": "Health and readiness probes"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "description": "Enter JWT access token",
+        "in": "header"
+      },
+      "x-tenant-id": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-tenant-id",
+        "description": "Tenant ID header for multi-tenant routing"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "student@demo.pandalang.com",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password123!",
+            "description": "Min 8 chars, must contain lowercase, uppercase, and digit",
+            "minLength": 8
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Jane",
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe",
+            "maxLength": 100
+          },
+          "tenantSlug": {
+            "type": "string",
+            "example": "demo",
+            "description": "Slug of the tenant to register under"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName",
+          "tenantSlug"
+        ]
+      },
+      "AuthUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "email": {
+            "type": "string",
+            "example": "student@demo.pandalang.com"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Jane"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "tenantId": {
+            "type": "string",
+            "example": "tenant-uuid"
+          },
+          "roles": {
+            "example": [
+              "STUDENT"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "tenantId",
+          "roles",
+          "isActive"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "refreshToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUserDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "user"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "student@demo.pandalang.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password123!"
+          },
+          "tenantSlug": {
+            "type": "string",
+            "example": "demo",
+            "description": "Tenant slug"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "tenantSlug"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "TokensResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "refreshToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ]
+      },
+      "CreateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Acme Corp",
+            "maxLength": 255
+          },
+          "slug": {
+            "type": "string",
+            "example": "acme-corp",
+            "maxLength": 100,
+            "description": "Lowercase alphanumeric with hyphens"
+          },
+          "domain": {
+            "type": "string",
+            "example": "acme.pandalang.com",
+            "maxLength": 255
+          },
+          "settings": {
+            "type": "object",
+            "example": {
+              "theme": "dark",
+              "language": "en"
+            },
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "TenantResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "name": {
+            "type": "string",
+            "example": "Acme Corp"
+          },
+          "slug": {
+            "type": "string",
+            "example": "acme-corp"
+          },
+          "domain": {
+            "type": "object",
+            "example": "acme.pandalang.com",
+            "nullable": true
+          },
+          "settings": {
+            "type": "object",
+            "example": {
+
+            },
+            "additionalProperties": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "TRIAL"
+            ],
+            "example": "ACTIVE"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "settings",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Acme Corp",
+            "maxLength": 255
+          },
+          "domain": {
+            "type": "string",
+            "example": "acme.pandalang.com",
+            "maxLength": 255
+          },
+          "settings": {
+            "type": "object",
+            "example": {
+              "theme": "dark"
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "UpdateTenantStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "TRIAL"
+            ],
+            "example": "ACTIVE"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "instructor@demo.pandalang.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password123!",
+            "minLength": 8
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John",
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Smith",
+            "maxLength": 100
+          },
+          "roleId": {
+            "type": "string",
+            "example": "role-uuid",
+            "description": "UUID of the role to assign"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName",
+          "roleId"
+        ]
+      },
+      "RoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "role-uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "INSTRUCTOR"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "user-uuid"
+          },
+          "tenantId": {
+            "type": "string",
+            "example": "tenant-uuid"
+          },
+          "email": {
+            "type": "string",
+            "example": "instructor@demo.pandalang.com"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Smith"
+          },
+          "avatar": {
+            "type": "object",
+            "example": "https://cdn.example.com/avatar.jpg",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "example": "2026-01-01T00:00:00.000Z",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "email",
+          "firstName",
+          "lastName",
+          "isActive",
+          "createdAt",
+          "updatedAt",
+          "roles"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "Jane",
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe",
+            "maxLength": 100
+          },
+          "avatar": {
+            "type": "string",
+            "example": "https://cdn.example.com/avatar.jpg",
+            "maxLength": 500
+          }
+        }
+      },
+      "AssignRoleDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "string",
+            "example": "role-uuid",
+            "description": "UUID of the role to assign"
+          }
+        },
+        "required": [
+          "roleId"
+        ]
+      },
+      "CreateCourseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Mandarin Chinese for Beginners",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "example": "Learn the basics of Mandarin Chinese"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "ADVANCED"
+            ],
+            "example": "BEGINNER"
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+              "language": "zh",
+              "subtitles": [
+                "en"
+              ]
+            },
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "CourseResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "course-uuid"
+          },
+          "tenantId": {
+            "type": "string",
+            "example": "tenant-uuid"
+          },
+          "instructorId": {
+            "type": "string",
+            "example": "instructor-uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "Mandarin Chinese for Beginners"
+          },
+          "slug": {
+            "type": "string",
+            "example": "mandarin-chinese-for-beginners"
+          },
+          "description": {
+            "type": "object",
+            "example": "Learn the basics of Mandarin Chinese",
+            "nullable": true
+          },
+          "thumbnail": {
+            "type": "object",
+            "example": "https://cdn.example.com/thumbnail.jpg",
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "ADVANCED"
+            ],
+            "example": "BEGINNER"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED",
+              "ARCHIVED"
+            ],
+            "example": "DRAFT"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+
+            },
+            "additionalProperties": true
+          },
+          "publishedAt": {
+            "type": "object",
+            "example": "2026-01-01T00:00:00.000Z",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "sectionsCount": {
+            "type": "number",
+            "example": 3
+          },
+          "lessonsCount": {
+            "type": "number",
+            "example": 9
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "instructorId",
+          "title",
+          "slug",
+          "level",
+          "status",
+          "sortOrder",
+          "metadata",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateCourseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Advanced Mandarin Chinese",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "example": "Take your Mandarin to the next level"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "ADVANCED"
+            ],
+            "example": "INTERMEDIATE"
+          },
+          "thumbnail": {
+            "type": "string",
+            "example": "https://cdn.example.com/thumbnail.jpg",
+            "maxLength": 500
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+              "language": "zh"
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "CreateSectionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Introduction to Tones",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "example": "Learn the four tones of Mandarin"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "SectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "section-uuid"
+          },
+          "courseId": {
+            "type": "string",
+            "example": "course-uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "Introduction to Tones"
+          },
+          "description": {
+            "type": "object",
+            "example": "Learn the four tones of Mandarin",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "lessonsCount": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": [
+          "id",
+          "courseId",
+          "title",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateSectionDto": {
+        "type": "object",
+        "properties": {
+
+        }
+      },
+      "CreateLessonDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "The Four Tones",
+            "maxLength": 255
+          },
+          "content": {
+            "type": "string",
+            "example": "Mandarin Chinese has four tones..."
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "TEXT",
+              "VIDEO",
+              "AUDIO",
+              "DOCUMENT"
+            ],
+            "example": "VIDEO"
+          },
+          "mediaUrl": {
+            "type": "string",
+            "example": "https://cdn.example.com/lesson.mp4",
+            "maxLength": 500
+          },
+          "durationMinutes": {
+            "type": "number",
+            "example": 10,
+            "minimum": 0
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "LessonResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "lesson-uuid"
+          },
+          "sectionId": {
+            "type": "string",
+            "example": "section-uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "The Four Tones"
+          },
+          "content": {
+            "type": "object",
+            "example": "Mandarin Chinese has four tones...",
+            "nullable": true
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "TEXT",
+              "VIDEO",
+              "AUDIO",
+              "DOCUMENT"
+            ],
+            "example": "VIDEO"
+          },
+          "mediaUrl": {
+            "type": "object",
+            "example": "https://cdn.example.com/lesson.mp4",
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "object",
+            "example": 10,
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "sectionId",
+          "title",
+          "contentType",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateLessonDto": {
+        "type": "object",
+        "properties": {
+
+        }
+      },
+      "QuizAnswerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "answer-uuid"
+          },
+          "answer": {
+            "type": "string",
+            "example": "First tone (flat)"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "id",
+          "answer",
+          "sortOrder"
+        ]
+      },
+      "QuizQuestionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "question-uuid"
+          },
+          "quizId": {
+            "type": "string",
+            "example": "quiz-uuid"
+          },
+          "question": {
+            "type": "string",
+            "example": "Which tone is represented by a flat line?"
+          },
+          "questionType": {
+            "type": "string",
+            "example": "MULTIPLE_CHOICE"
+          },
+          "points": {
+            "type": "number",
+            "example": 1
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizAnswerResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "quizId",
+          "question",
+          "questionType",
+          "points",
+          "sortOrder"
+        ]
+      },
+      "QuizResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "quiz-uuid"
+          },
+          "sectionId": {
+            "type": "string",
+            "example": "section-uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "Tone Recognition Quiz"
+          },
+          "description": {
+            "type": "object",
+            "example": "Test your knowledge of the four tones",
+            "nullable": true
+          },
+          "passingScore": {
+            "type": "number",
+            "example": 70
+          },
+          "timeLimitMinutes": {
+            "type": "object",
+            "example": 30,
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizQuestionResponseDto"
+            }
+          },
+          "questionsCount": {
+            "type": "number",
+            "example": 5
+          }
+        },
+        "required": [
+          "id",
+          "sectionId",
+          "title",
+          "passingScore",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateQuizDto": {
+        "type": "object",
+        "properties": {
+
+        }
+      },
+      "CreateAnswerDto": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string",
+            "example": "First tone (flat)"
+          },
+          "isCorrect": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether this answer is correct"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "answer",
+          "isCorrect"
+        ]
+      },
+      "CreateQuestionDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "example": "Which tone is represented by a flat line?"
+          },
+          "questionType": {
+            "type": "string",
+            "enum": [
+              "MULTIPLE_CHOICE",
+              "TRUE_FALSE",
+              "FILL_IN_BLANK"
+            ],
+            "example": "MULTIPLE_CHOICE"
+          },
+          "points": {
+            "type": "number",
+            "example": 1,
+            "minimum": 1,
+            "description": "Points for this question"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0,
+            "minimum": 0
+          },
+          "answers": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateAnswerDto"
+            }
+          }
+        },
+        "required": [
+          "question",
+          "questionType",
+          "answers"
+        ]
+      },
+      "UpdateQuestionDto": {
+        "type": "object",
+        "properties": {
+
+        }
+      },
+      "QuizAnswerSubmission": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "example": "question-uuid"
+          },
+          "answerId": {
+            "type": "string",
+            "example": "answer-uuid",
+            "description": "For MULTIPLE_CHOICE and TRUE_FALSE questions"
+          },
+          "textAnswer": {
+            "type": "string",
+            "example": "First tone",
+            "description": "For FILL_IN_BLANK questions"
+          }
+        },
+        "required": [
+          "questionId"
+        ]
+      },
+      "SubmitQuizDto": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizAnswerSubmission"
+            }
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "CreateQuizDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Tone Recognition Quiz",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "example": "Test your knowledge of the four tones"
+          },
+          "passingScore": {
+            "type": "number",
+            "example": 70,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Passing score percentage"
+          },
+          "timeLimitMinutes": {
+            "type": "number",
+            "example": 30,
+            "minimum": 1,
+            "description": "Time limit in minutes"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "CreateEnrollmentDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "example": "course-uuid",
+            "description": "UUID of the course to enroll in"
+          }
+        },
+        "required": [
+          "courseId"
+        ]
+      },
+      "EnrollmentCourseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "course-uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "Mandarin Chinese for Beginners"
+          },
+          "slug": {
+            "type": "string",
+            "example": "mandarin-chinese-for-beginners"
+          },
+          "thumbnail": {
+            "type": "object",
+            "example": "https://cdn.example.com/thumbnail.jpg",
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "example": "BEGINNER"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "level"
+        ]
+      },
+      "EnrollmentUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "user-uuid"
+          },
+          "email": {
+            "type": "string",
+            "example": "student@demo.pandalang.com"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Jane"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "EnrollmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "enrollment-uuid"
+          },
+          "userId": {
+            "type": "string",
+            "example": "user-uuid"
+          },
+          "courseId": {
+            "type": "string",
+            "example": "course-uuid"
+          },
+          "tenantId": {
+            "type": "string",
+            "example": "tenant-uuid"
+          },
+          "status": {
+            "type": "string",
+            "example": "ACTIVE"
+          },
+          "progressPercent": {
+            "type": "number",
+            "example": 50,
+            "description": "Progress percentage 0-100"
+          },
+          "enrolledAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "completedAt": {
+            "type": "object",
+            "example": "2026-01-15T00:00:00.000Z",
+            "nullable": true
+          },
+          "course": {
+            "$ref": "#/components/schemas/EnrollmentCourseDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/EnrollmentUserDto"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "courseId",
+          "tenantId",
+          "status",
+          "progressPercent",
+          "enrolledAt"
+        ]
+      },
+      "UpdateProgressDto": {
+        "type": "object",
+        "properties": {
+          "lessonId": {
+            "type": "string",
+            "example": "lesson-uuid",
+            "description": "UUID of the lesson to update progress for"
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the lesson is completed"
+          },
+          "timeSpentSeconds": {
+            "type": "number",
+            "example": 600,
+            "minimum": 0,
+            "description": "Time spent on lesson in seconds"
+          }
+        },
+        "required": [
+          "lessonId",
+          "isCompleted"
+        ]
+      }
+    }
+  }
+}

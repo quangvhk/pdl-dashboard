@@ -1,5 +1,17 @@
 # Pandalang — Completed Tasks
 
+## Task 2.6: Next.js Middleware ✅
+
+**Files created:**
+- `middleware.ts` — Next.js Edge middleware at project root; defines `PUBLIC_ROUTES` (`/login`, `/register`); reads `auth-status` cookie to determine `isAuthenticated`; redirects authenticated users away from public routes to `/dashboard`; redirects unauthenticated users from all other routes to `/login` with `callbackUrl` query param; `config.matcher` excludes `api`, `_next/static`, `_next/image`, `favicon.ico`, and any path containing a file extension.
+
+**Notes:**
+- Role-based access control is enforced client-side via a `RoleGate` component (Task 3.3) — middleware only checks the lightweight `auth-status` cookie, never decodes JWTs.
+- `callbackUrl` is appended to the login redirect so the user is returned to the originally requested page after authentication.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 2.5: Auth Initializer ✅
 
 **Files created/updated:**

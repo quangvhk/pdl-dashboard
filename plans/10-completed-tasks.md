@@ -1,5 +1,25 @@
 # Pandalang — Completed Tasks
 
+## Task 2.3: API Service Functions ✅
+
+**Files created:**
+- `lib/api/services/auth.service.ts` — `authService` with `login`, `register`, `refresh`, `logout`, `getMe`; all methods fully typed against `@/types` auth types.
+- `lib/api/services/tenants.service.ts` — `tenantsService` with `list`, `getById`, `create`, `update`, `updateStatus`; supports `PaginationParams & { search? }` on list.
+- `lib/api/services/users.service.ts` — `usersService` with `list`, `getById`, `create`, `update`, `deactivate`, `assignRole`, `removeRole`; list supports `search`, `role`, `isActive` filters.
+- `lib/api/services/courses.service.ts` — `coursesService` with `list`, `getById`, `create`, `update`, `delete`, `publish`, `archive`; list supports `search`, `status`, `level` filters.
+- `lib/api/services/sections.service.ts` — `sectionsService` with `list`, `create`, `update`, `delete`; all methods take `courseId` as first param.
+- `lib/api/services/lessons.service.ts` — `lessonsService` with `list`, `getById`, `create`, `update`, `delete`; all methods take `courseId` + `sectionId` as first params.
+- `lib/api/services/quizzes.service.ts` — `quizzesService` with `create`, `getById`, `update`, `delete`, `addQuestion`, `updateQuestion`, `deleteQuestion`, `submitAttempt`, `listAttempts`.
+- `lib/api/services/enrollments.service.ts` — `enrollmentsService` with `create`, `getMyEnrollments`, `getById`, `updateProgress`, `getCourseEnrollments`; `getCourseEnrollments` uses `ENDPOINTS.courses.enrollments(courseId)`.
+
+**Notes:**
+- All services import `apiClient` from `../client` and `ENDPOINTS` from `../endpoints`.
+- All request/response types imported from `@/types` barrel export.
+- Query params passed as `Record<string, string | number | boolean | undefined | null>` to match `apiClient.get()` signature.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 2.2: API Client ✅
 
 **Files updated:**

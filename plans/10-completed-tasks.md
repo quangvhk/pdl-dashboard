@@ -1,5 +1,21 @@
 # Pandalang — Completed Tasks
 
+## Task 4.2: Auth Hooks ✅
+
+**Files created:**
+- `features/auth/hooks/use-login.ts` — `useLogin` mutation hook; wraps `authService.login`; on success calls `login()` on auth store (stores tokens + user + sets `auth-status` cookie), calls `setTenant()` on tenant store with `tenantId` from response, then redirects to `/dashboard` via `useRouter`.
+- `features/auth/hooks/use-register.ts` — `useRegister` mutation hook; wraps `authService.register`; on success calls `login()` on auth store, calls `setTenant()` on tenant store, then redirects to `/dashboard`.
+- `features/auth/hooks/use-logout.ts` — `useLogout` mutation hook; wraps `authService.logout`; uses `onSettled` (fires on both success and error) to always: call `logout()` on auth store (clears tokens + cookie), call `clearTenant()` on tenant store, call `queryClient.clear()` to wipe all React Query cache, then redirect to `/login`.
+- `features/auth/hooks/use-current-user.ts` — `useCurrentUser` query hook; wraps `authService.getMe`; exports stable `currentUserQueryKey = ['auth', 'me']`; only enabled when `isAuthenticated` is true; `staleTime` 5 minutes; calls `setUser()` on auth store inside `queryFn` to keep Zustand in sync with latest server profile.
+
+**Notes:**
+- All hooks are `'use client'` — safe to use in any Client Component.
+- `useLogout` uses `onSettled` instead of `onSuccess` so local state is always cleared even if the server logout endpoint fails (e.g. expired token).
+- `useCurrentUser` keeps the Zustand `user` field in sync by calling `setUser` inside `queryFn` after each successful fetch.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 4.1: Auth Schemas ✅
 
 **Files created:**

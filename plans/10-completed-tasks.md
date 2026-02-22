@@ -1,5 +1,24 @@
 # Pandalang — Completed Tasks
 
+## Task 3.3: Shared Components ✅
+
+**Files created:**
+- `components/shared/page-header.tsx` — `PageHeader` client component; accepts `title`, `description`, `actions` (ReactNode), `className`; responsive flex row on `sm+` with truncated title and shrink-free actions slot.
+- `components/shared/empty-state.tsx` — `EmptyState` client component; accepts `icon` (LucideIcon), `title`, `description`, `action` (label + onClick), `children`; renders dashed-border rounded container with muted icon circle, heading, description, and optional CTA `Button`.
+- `components/shared/loading-skeleton.tsx` — Exports five skeleton patterns: `CardGridSkeleton` (responsive 1/2/3-col card grid), `TableSkeleton` (header + configurable rows/columns), `StatCardSkeleton` (1/2/4-col stat cards), `PageSkeleton` (header + card grid), `DetailPageSkeleton` (title + body lines + badges); all built from shadcn `Skeleton` + `Card` primitives.
+- `components/shared/confirm-dialog.tsx` — `ConfirmDialog` client component wrapping `AlertDialog`; props: `open`, `onOpenChange`, `title`, `description`, `confirmLabel`, `cancelLabel`, `variant` (`default` | `destructive`), `onConfirm`, `isLoading`; disables both buttons while loading; applies `buttonVariants` to the confirm action.
+- `components/shared/role-gate.tsx` — `RoleGate` client component; reads `user.roles` from `useAuthStore`; accepts `allowedRoles: Role[]` and optional `fallback`; renders `children` when user has at least one matching role, `fallback` (or nothing) otherwise.
+- `components/shared/data-table.tsx` — Generic `DataTable<TRow>` client component; column definitions via `DataTableColumn<TRow>` interface (`key`, `header`, `cell`, `sortable`, `className`); built-in client-side sort (asc/desc/none toggle with `ChevronUp`/`ChevronDown`/`ChevronsUpDown` icons); optional built-in search input with `Search` icon; supports controlled `searchValue`/`onSearchChange` for server-side search; `toolbar` slot for extra controls; shows `TableSkeleton` while `isLoading`, `EmptyState` when no rows; clickable rows via `onRowClick`.
+- `components/shared/pagination.tsx` — `Pagination` client component; props: `page` (1-based), `totalPages`, `onPageChange`, optional `totalItems`/`pageSize` for range label; renders "Showing X–Y of Z" or "Page X of Y"; smart page-number list (first, last, current±1, ellipsis); First/Prev/Next/Last icon buttons (`ChevronsLeft`/`ChevronLeft`/`ChevronRight`/`ChevronsRight`); returns `null` when `totalPages <= 1`; full `aria-label` + `aria-current` accessibility.
+
+**Notes:**
+- All components are `'use client'` — safe to import from any Server or Client component.
+- `DataTable` imports `TableSkeleton` and `EmptyState` internally — no extra wiring needed at call sites.
+- `RoleGate` uses the same `Role` union (`SUPER_ADMIN` | `TENANT_ADMIN` | `INSTRUCTOR` | `STUDENT`) as the sidebar navigation config.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 3.2: Dashboard Layout ✅
 
 **Files created:**

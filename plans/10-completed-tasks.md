@@ -1,5 +1,31 @@
 # Pandalang — Completed Tasks
 
+## Task 5.1: Dashboard Page ✅
+
+**Files created:**
+- `features/courses/components/course-card.tsx` — `CourseCard` client component; accepts `course`, optional `progressPercent` (renders `Progress` bar in `CardFooter`), `showStatus` (status badge overlay for instructors/admins), `enrolledCount`; thumbnail with `BookOpen` fallback icon; level badge overlay (`BEGINNER`/`INTERMEDIATE`/`ADVANCED` with colour variants); meta row with sections count, lessons count, enrolled count; hover shadow + scale thumbnail transition; full `Link` wrapper to `/courses/[id]`; focus-visible ring for accessibility.
+- `features/courses/hooks/use-courses.ts` — `useCourses` query hook; `coursesQueryKeys` factory (`all`, `lists`, `list(params)`, `details`, `detail(id)`); wraps `coursesService.list`; accepts `UseCoursesParams` (pagination + search/status/level filters); `staleTime` 2 minutes.
+- `features/enrollments/hooks/use-enrollments.ts` — `useMyEnrollments` query hook; `enrollmentsQueryKeys` factory (`all`, `mine`, `detail(id)`, `byCourse(courseId)`); wraps `enrollmentsService.getMyEnrollments`; only enabled when `isAuthenticated` is true; `staleTime` 2 minutes.
+- `app/(dashboard)/dashboard/page.tsx` — `'use client'` page; reads `user.roles` from `useAuthStore`; renders one of four role-specific sub-components: `StudentDashboard`, `InstructorDashboard`, `TenantAdminDashboard`, `SuperAdminDashboard`; role priority: `SUPER_ADMIN` → `TENANT_ADMIN` → `INSTRUCTOR` → `STUDENT` (default).
+
+**Role-specific dashboard content:**
+- **Student** (`StudentDashboard`): welcome greeting; 3 stat cards (Enrolled / In Progress / Completed) derived from `useMyEnrollments`; "Continue Learning" list of up to 3 active enrollments with `Progress` bar + "Continue →" link; empty state with "Browse Courses" CTA; "Browse Courses →" footer link.
+- **Instructor** (`InstructorDashboard`): welcome greeting; 3 stat cards (My Courses / Published / Drafts) from `useCourses`; `CourseCard` grid (up to 4, `showStatus`); empty state with "Create Course" CTA; "+ Create New Course" button in section header; "View All Courses →" link when >4 courses.
+- **Tenant Admin** (`TenantAdminDashboard`): org name heading; 3 stat cards (Users placeholder / Courses / Published); Quick Actions card with "Manage Users", "View Courses", "New Course" buttons; recent courses grid (up to 3, `showStatus`).
+- **Super Admin** (`SuperAdminDashboard`): platform heading; 2 stat cards (Tenants / Total Users — both placeholder); Quick Actions card with "Manage Tenants" + "New Tenant" buttons; tenant status info card linking to `/tenants`.
+
+**Shared sub-components (defined in page file):**
+- `StatCard` — icon + label + value + optional description; `bg-primary/10` icon container.
+- `StatCardSkeleton` — skeleton placeholder matching `StatCard` layout.
+
+**Notes:**
+- All four sub-components are `'use client'` (page is `'use client'`).
+- Loading states use `Skeleton` components matching the final layout to prevent layout shift.
+- `useCourses` and `useMyEnrollments` are only called in the relevant role sub-component — no unnecessary API calls for other roles.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 4.3: Auth Components & Pages ✅
 
 **Files created/updated:**

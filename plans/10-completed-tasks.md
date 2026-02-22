@@ -1,5 +1,24 @@
 # Pandalang — Completed Tasks
 
+## Task 4.3: Auth Components & Pages ✅
+
+**Files created/updated:**
+- `features/auth/components/login-form.tsx` — `LoginForm` client component; React Hook Form + Zod resolver (`loginSchema`); fields: email, password (show/hide toggle), tenantSlug (pre-filled from `NEXT_PUBLIC_DEFAULT_TENANT_SLUG`); inline field validation errors; API error banner with `AlertCircle` icon; calls `useLogin(callbackUrl)` on submit; `callbackUrl` read from `useSearchParams`; redirects to `/dashboard` or `callbackUrl` on success; link to `/register`.
+- `features/auth/components/register-form.tsx` — `RegisterForm` client component; React Hook Form + Zod resolver (`registerSchema`); fields: firstName, lastName, email, password (show/hide toggle), tenantSlug; live password strength indicator — 4 rule checklist (length, uppercase, lowercase, digit) with `Check`/`X` icons + 4-segment colour bar (red → yellow → green); inline validation errors; API error banner; calls `useRegister` on submit; link to `/login`.
+- `features/auth/components/user-menu.tsx` — `UserMenu` client component; avatar `DropdownMenu` showing display name, email, primary role (formatted); Profile / Settings links navigate to `/settings`; logout action calls `useLogout` mutation; button and logout item disabled while `isPending`; shows "Signing out…" text during logout.
+- `app/(auth)/login/page.tsx` — Server component; renders `<LoginForm />` wrapped in `<Suspense>` (required for `useSearchParams`); exports `metadata` with `title: 'Sign In'`.
+- `app/(auth)/register/page.tsx` — Server component; renders `<RegisterForm />`; exports `metadata` with `title: 'Create Account'`.
+- `features/auth/hooks/use-login.ts` — Updated to accept optional `callbackUrl` param (default `'/dashboard'`) so `LoginForm` can honour the `callbackUrl` query string after middleware redirect.
+
+**Notes:**
+- `LoginForm` and `RegisterForm` are `'use client'` — safe to import from any Server or Client component.
+- `LoginForm` is wrapped in `<Suspense>` in the page because `useSearchParams()` requires a Suspense boundary in Next.js App Router.
+- No `@/components/ui/alert` component exists in the project; error banners use a plain `div` with `bg-destructive/10` + `border-destructive/30` Tailwind classes.
+- Password strength bar colours: 1 rule = red, 2–3 rules = yellow, 4 rules = green.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 4.2: Auth Hooks ✅
 
 **Files created:**

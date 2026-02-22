@@ -1,5 +1,24 @@
 # Pandalang — Completed Tasks
 
+## Task 5.3: Course Detail Page ✅
+
+**Files created:**
+- `features/courses/hooks/use-course.ts` — `useCourse` query hook; reuses `coursesQueryKeys.detail(id)` from `use-courses`; wraps `coursesService.getById`; enabled only when `courseId` is truthy; `staleTime` 2 minutes.
+- `features/courses/hooks/use-sections.ts` — `useSections` query hook; `sectionsQueryKeys.byCourse(courseId)` nested under `coursesQueryKeys.detail`; wraps `sectionsService.list`; enabled only when `courseId` is truthy; `staleTime` 2 minutes.
+- `features/enrollments/hooks/use-enroll.ts` — `useEnroll` mutation hook; wraps `enrollmentsService.create`; on success invalidates `enrollmentsQueryKeys.mine()` so the enrollment list refreshes.
+- `features/enrollments/components/enroll-button.tsx` — `EnrollButton` client component; accepts `courseId` and optional `onSuccess` callback; calls `useEnroll` mutation; shows `Loader2` spinner + "Enrolling…" while `isPending`; shows `BookOpen` icon + "Enroll Now" when idle; button disabled while pending.
+- `features/courses/components/course-detail.tsx` — `CourseDetail` client component; accepts `courseId`; reads `user.roles` from `useAuthStore`; derives `canEdit` (Instructor/Admin); fetches course via `useCourse`, sections via `useSections`, enrollments via `useMyEnrollments`; derives `enrollment` + `isEnrolled` + `progressPercent` for the current course; renders `CourseDetailSkeleton` while loading; renders error state with "Back to Courses" button on fetch failure; renders: back link, thumbnail (with `BookOpen` fallback), title, level/status/sections/lessons badges, description, CTA block (Edit button for instructors/admins, progress card + "Continue Learning" for enrolled students, `EnrollButton` for unenrolled students); collapsible section accordion (`SectionItem`) with lesson count, lesson rows (linked for enrolled users), quiz rows with `ClipboardList` icon; empty content state when no sections.
+- `app/(dashboard)/courses/[courseId]/page.tsx` — `'use client'` page; unwraps `params` via React 19 `use(params)`; renders `<CourseDetail courseId={courseId} />`.
+
+**Notes:**
+- `SectionItem` accordion is client-side only (no extra API call per section); lesson rows are rendered as count-based placeholders linking to the lesson viewer route; actual lesson metadata is loaded in the lesson viewer (Task 6.1).
+- `canEdit` flag shows "Edit Course" button for Instructor/Admin; students see Enroll or Continue Learning.
+- Progress card shows `Progress` bar + percentage derived from `enrollment.progressPercent`.
+- `EnrollButton.onSuccess` calls `router.refresh()` to re-fetch enrollment state after enrollment.
+- TypeScript compiles with no errors (`pnpm tsc --noEmit` exit 0).
+
+---
+
 ## Task 5.2: Course List Page ✅
 
 **Files created/updated:**

@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUIStore } from '@/stores/ui.store'
+import { useLogout } from '@/features/auth/hooks/use-logout'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -22,13 +23,9 @@ import { TenantSwitcher } from '@/features/auth/components/tenant-switcher'
 export function Header() {
   const router = useRouter()
   const { setTheme } = useTheme()
-  const { user, logout } = useAuthStore()
+  const { user } = useAuthStore()
   const { toggleSidebar } = useUIStore()
-
-  const handleLogout = () => {
-    logout()
-    router.push('/login')
-  }
+  const { mutate: handleLogout, isPending: isLoggingOut } = useLogout()
 
   const initials = user
     ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() ||
@@ -136,11 +133,12 @@ export function Header() {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={handleLogout}
+              onClick={() => handleLogout()}
+              disabled={isLoggingOut}
               className="text-destructive focus:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Log out
+              {isLoggingOut ? 'Signing out…' : 'Log out'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

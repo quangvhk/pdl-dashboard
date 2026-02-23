@@ -62,6 +62,7 @@ export const useAuthStore = create<AuthState>()(
           currentTenantId: null,
           currentRole: null,
           currentRoleId: null,
+          isInitialized: false,
         })
       },
 

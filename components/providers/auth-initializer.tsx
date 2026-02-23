@@ -33,7 +33,9 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
         // Step 1: Refresh the session (cookie sent automatically via credentials: 'include')
         const refreshResult = await authService.refresh()
 
-        if (!refreshResult.success) {
+        // Treat undefined/null as a failed refresh (defensive — apiClient envelope unwrap
+        // can return undefined if the backend response has no `data` field)
+        if (!refreshResult?.success) {
           logout()
           setInitialized(true)
           return

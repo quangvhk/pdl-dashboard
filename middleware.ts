@@ -8,23 +8,25 @@ const PUBLIC_ROUTES = ['/', '/login', '/register', '/invitations/accept']
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // V2: Auth uses httpOnly cookies managed by the backend.
-  // The backend sets an `auth-status` cookie (non-httpOnly) that the frontend
-  // can read to determine if the user has an active session, without exposing
-  // the actual access/refresh tokens.
-  const hasAuthStatus = request.cookies.has('auth-status')
+  // V2: Auth uses HttpOnly cookies managed by the backend.
+  // The backend sets `accessToken` (HttpOnly) — we check for its presence AND
+  // non-empty value to determine if the user has an active session.
+  // Note: cookies().delete() in Next.js API routes sets the cookie to an empty
+  // string with Max-Age=0 rather than fully removing it, so we must check value.
+  const accessToken = request.cookies.get('accessToken')
+  const isAuthenticated = !!accessToken?.value
 
   // Allow public routes
   if (PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(route + '/'))) {
     // Redirect authenticated users away from login/register to dashboard
-    if (hasAuthStatus && (pathname === '/login' || pathname === '/register')) {
+    if (isAuthenticated && (pathname === '/login' || pathname === '/register')) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     return NextResponse.next()
   }
 
   // Protect all other routes — redirect unauthenticated users to /login
-  if (!hasAuthStatus) {
+  if (!isAuthenticated) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)

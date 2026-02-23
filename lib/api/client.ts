@@ -105,7 +105,11 @@ class ApiClient {
 
     this.isRefreshing = true
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
+      // Use relative path so it goes through the Next.js rewrite proxy
+      const refreshUrl = this.baseUrl
+        ? `${this.baseUrl}/api/v1/auth/refresh`
+        : '/api/v1/auth/refresh'
+      const response = await fetch(refreshUrl, {
         method: 'POST',
         credentials: 'include',
       })
@@ -238,8 +242,12 @@ function getTenantStore() {
   }
 }
 
+// Use empty string as baseUrl so browser requests go through the Next.js
+// rewrite proxy (next.config.ts: /api/v1/* → NEXT_PUBLIC_API_URL/api/v1/*).
+// This keeps all requests same-origin, allowing HttpOnly cookies to be set
+// and read correctly. For SSR contexts, Next.js rewrites also apply.
 export const apiClient = new ApiClient({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000',
+  baseUrl: '',
 
   getTenantId: () => {
     const state = getTenantStore()

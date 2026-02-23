@@ -1,5 +1,5 @@
 /**
- * API Endpoint Constants — Task 2.2
+ * API Endpoint Constants — FE-1.4 V2 Update
  * All API endpoint paths organized by feature domain.
  * Dynamic endpoints are functions that accept IDs and return the full path.
  */
@@ -13,6 +13,7 @@ export const ENDPOINTS = {
     refresh: `${API_V1}/auth/refresh`,
     logout: `${API_V1}/auth/logout`,
     me: `${API_V1}/auth/me`,
+    switchTenant: `${API_V1}/auth/switch-tenant`,
   },
 
   tenants: {
@@ -21,16 +22,51 @@ export const ENDPOINTS = {
     detail: (id: string) => `${API_V1}/tenants/${id}`,
     update: (id: string) => `${API_V1}/tenants/${id}`,
     updateStatus: (id: string) => `${API_V1}/tenants/${id}/status`,
+    transferOwnership: (id: string) => `${API_V1}/tenants/${id}/transfer-ownership`,
   },
 
   users: {
     list: `${API_V1}/users`,
-    create: `${API_V1}/users`,
     detail: (id: string) => `${API_V1}/users/${id}`,
     update: (id: string) => `${API_V1}/users/${id}`,
     deactivate: (id: string) => `${API_V1}/users/${id}`,
-    assignRole: (id: string) => `${API_V1}/users/${id}/roles`,
-    removeRole: (id: string, roleId: string) => `${API_V1}/users/${id}/roles/${roleId}`,
+  },
+
+  members: {
+    list: `${API_V1}/members`,
+    detail: (id: string) => `${API_V1}/members/${id}`,
+    changeRole: (id: string) => `${API_V1}/members/${id}/role`,
+    suspend: (id: string) => `${API_V1}/members/${id}/suspend`,
+    activate: (id: string) => `${API_V1}/members/${id}/activate`,
+    remove: (id: string) => `${API_V1}/members/${id}`,
+  },
+
+  invitations: {
+    list: `${API_V1}/invitations`,
+    create: `${API_V1}/invitations`,
+    cancel: (id: string) => `${API_V1}/invitations/${id}`,
+    accept: `${API_V1}/invitations/accept`,
+  },
+
+  roles: {
+    list: `${API_V1}/roles`,
+    create: `${API_V1}/roles`,
+    detail: (id: string) => `${API_V1}/roles/${id}`,
+    update: (id: string) => `${API_V1}/roles/${id}`,
+    delete: (id: string) => `${API_V1}/roles/${id}`,
+  },
+
+  permissions: {
+    list: `${API_V1}/permissions`,
+    create: `${API_V1}/permissions`,
+    detail: (id: string) => `${API_V1}/permissions/${id}`,
+    delete: (id: string) => `${API_V1}/permissions/${id}`,
+  },
+
+  rolePermissions: {
+    list: `${API_V1}/role-permissions`,
+    assign: `${API_V1}/role-permissions`,
+    remove: (id: string) => `${API_V1}/role-permissions/${id}`,
   },
 
   courses: {

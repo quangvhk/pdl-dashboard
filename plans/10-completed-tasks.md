@@ -357,3 +357,29 @@ Built the full permission catalog and per-tenant role-permission assignment UI. 
 - `app/(dashboard)/permissions/loading.tsx` — Loading skeleton: header, search toolbar, table skeleton (6 columns)
 - `app/(dashboard)/role-permissions/loading.tsx` — Loading skeleton: header, search + action toolbar, table skeleton (4 columns)
 
+---
+
+## FE-5.1: Update Users Feature for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Simplified user management for V2: removed tenant-scoped user creation and role assignment (replaced by Members + Invitations modules). Deleted stub files and the create-user page. Updated `use-users.ts` to remove the `role` filter param (users are global now). Gated the users list and detail pages to `SUPER_ADMIN` only. Updated descriptions to reflect the global user list model. Verified `user-table.tsx`, `user-detail.tsx`, and `role-badge.tsx` were already correct for V2 (updated in FE-1.1/FE-1.2 downstream fixes).
+
+### Files Deleted
+- `features/users/hooks/use-create-user.ts` — User creation replaced by registration + invitation flow
+- `features/users/hooks/use-assign-role.ts` — Role assignment replaced by Members module
+- `features/users/components/user-form.tsx` — No more user creation form
+- `app/(dashboard)/users/new/page.tsx` — No more create user page
+
+### Files Modified
+- `features/users/hooks/use-users.ts` — Removed `role` filter param from `UseUsersParams` and `usersQueryKeys.list`; users are global, no per-tenant role filter
+- `app/(dashboard)/users/page.tsx` — Gated to `SUPER_ADMIN` only (removed `TENANT_ADMIN` access); removed "New User" button; updated description to "global user accounts and tenant memberships"
+- `app/(dashboard)/users/[userId]/page.tsx` — Gated to `SUPER_ADMIN` only; updated description to "profile and tenant memberships"
+
+### Files Verified (no changes needed)
+- `features/users/components/user-table.tsx` — Already V2: shows `isSuperAdmin` badge + tenants count; no role filter; updated in FE-1.1
+- `features/users/components/user-detail.tsx` — Already V2: shows `tenants[]` list with role per tenant; no role management card; updated in FE-1.1
+- `features/users/components/role-badge.tsx` — Already works with single role string; no changes needed
+- `features/users/schemas/user.schema.ts` — Already V2: only `updateUserSchema`; `createUserSchema` removed in FE-1.1
+

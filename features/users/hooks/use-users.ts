@@ -7,7 +7,7 @@ import type { PaginationParams } from '@/types'
 export const usersQueryKeys = {
   all: ['users'] as const,
   lists: () => [...usersQueryKeys.all, 'list'] as const,
-  list: (params?: PaginationParams & { search?: string; role?: string; isActive?: boolean }) =>
+  list: (params?: PaginationParams & { search?: string; isActive?: boolean }) =>
     [...usersQueryKeys.lists(), params] as const,
   details: () => [...usersQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...usersQueryKeys.details(), id] as const,
@@ -15,7 +15,6 @@ export const usersQueryKeys = {
 
 export interface UseUsersParams extends PaginationParams {
   search?: string
-  role?: string
   isActive?: boolean
 }
 

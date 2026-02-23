@@ -143,3 +143,31 @@ Rewrote the auth initializer to support cookie-based session restoration for the
 ### Files Modified
 - `components/providers/auth-initializer.tsx` — Replaced `getMe()`-only flow with full V2 restore sequence: `refresh()` → `getMe()` → optional `switchTenant()` → sync tenant store; removed unused `login`/`setTenants`/`selectCurrentTenant` imports; dependency array changed from `[pathname]` to `[isInitialized]`
 
+---
+
+## FE-2.1: Update Auth Schemas
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that both auth schemas already have no `tenantSlug` field — they were cleaned up as part of FE-1.1 downstream fixes. No additional changes required.
+
+### Files Verified (no changes needed)
+- `features/auth/schemas/login.schema.ts` — Contains only `email` and `password` fields; no `tenantSlug`
+- `features/auth/schemas/register.schema.ts` — Contains `email`, `password`, `firstName`, `lastName`; no `tenantSlug`
+
+---
+
+## FE-2.2: Update Auth Hooks for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Updated `use-login.ts` to auto-switch tenant when the user belongs to exactly one tenant (calls `authService.switchTenant()` and syncs the tenant store immediately after login). Created the new `use-switch-tenant.ts` mutation hook for explicit tenant switching from the UI. Verified `use-register.ts`, `use-logout.ts`, and `use-current-user.ts` were already correct for V2.
+
+### Files Modified
+- `features/auth/hooks/use-login.ts` — Added auto-switch logic: if `tenants.length === 1`, calls `authService.switchTenant()` → `authStore.switchTenant()` → `tenantStore.setFromAuthStore()` before redirecting to dashboard; imported `useTenantStore`
+
+### Files Created
+- `features/auth/hooks/use-switch-tenant.ts` — `useSwitchTenant` mutation hook: calls `authService.switchTenant({ tenantId })`, updates auth store via `switchTenant()`, syncs tenant store via `setFromAuthStore()`, invalidates all React Query cache (tenant-scoped data), shows success/error toasts
+

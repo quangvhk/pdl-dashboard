@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Breadcrumbs } from './breadcrumbs'
+import { TenantSwitcher } from '@/features/auth/components/tenant-switcher'
 
 export function Header() {
   const router = useRouter()
@@ -59,6 +60,11 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Tenant switcher — shown when user has tenants */}
+        <TenantSwitcher />
+
+        <Separator orientation="vertical" className="h-6" />
+
         {/* Theme toggle */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -11,11 +11,18 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  UserCheck,
+  Mail,
+  Shield,
+  Lock,
+  KeyRound,
+  AlertCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/stores/auth.store'
+import { useAuthStore, selectCurrentTenant } from '@/stores/auth.store'
 import { useUIStore } from '@/stores/ui.store'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -29,7 +36,10 @@ interface NavItem {
   label: string
   href: string
   icon: React.ComponentType<{ className?: string }>
+  /** Roles that can see this item. Empty array = all authenticated users. */
   roles: string[]
+  /** If true, only Super Admin can see this item regardless of currentRole. */
+  superAdminOnly?: boolean
 }
 
 const navigation: NavItem[] = [
@@ -52,16 +62,50 @@ const navigation: NavItem[] = [
     roles: ['STUDENT'],
   },
   {
+    label: 'Members',
+    href: '/members',
+    icon: UserCheck,
+    roles: ['TENANT_ADMIN', 'SUPER_ADMIN'],
+  },
+  {
+    label: 'Invitations',
+    href: '/invitations',
+    icon: Mail,
+    roles: ['TENANT_ADMIN', 'INSTRUCTOR', 'SUPER_ADMIN'],
+  },
+  {
     label: 'Users',
     href: '/users',
     icon: Users,
-    roles: ['SUPER_ADMIN', 'TENANT_ADMIN'],
+    roles: ['SUPER_ADMIN'],
+    superAdminOnly: true,
   },
   {
     label: 'Tenants',
     href: '/tenants',
     icon: Building2,
     roles: ['SUPER_ADMIN'],
+    superAdminOnly: true,
+  },
+  {
+    label: 'Roles',
+    href: '/roles',
+    icon: Shield,
+    roles: ['SUPER_ADMIN'],
+    superAdminOnly: true,
+  },
+  {
+    label: 'Permissions',
+    href: '/permissions',
+    icon: Lock,
+    roles: ['SUPER_ADMIN'],
+    superAdminOnly: true,
+  },
+  {
+    label: 'Role Permissions',
+    href: '/role-permissions',
+    icon: KeyRound,
+    roles: ['TENANT_ADMIN', 'SUPER_ADMIN'],
   },
   {
     label: 'Settings',
@@ -73,16 +117,21 @@ const navigation: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const user = useAuthStore((state) => state.user)
   const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
+  const currentTenantId = useAuthStore((s) => s.currentTenantId)
+  const currentTenant = useAuthStore(selectCurrentTenant)
   const { sidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
 
   const visibleNavItems = navigation.filter((item) => {
+    if (item.superAdminOnly) return isSuperAdmin
     if (isSuperAdmin) return true
     if (!currentRole) return false
     return item.roles.includes(currentRole)
   })
+
+  /** Whether the user is authenticated but has no active tenant context */
+  const hasNoTenantContext = !isSuperAdmin && !currentTenantId
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -109,9 +158,49 @@ export function Sidebar() {
           )}
         </div>
 
+        {/* Current tenant context */}
+        {!sidebarCollapsed && (
+          <div className="border-b px-4 py-3">
+            {currentTenant ? (
+              <div className="flex flex-col gap-0.5">
+                <p className="text-xs font-medium text-foreground truncate">
+                  {currentTenant.tenantName}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {currentTenant.tenantSlug}
+                  </p>
+                  {currentRole && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 shrink-0">
+                      {formatRole(currentRole)}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            ) : isSuperAdmin ? (
+              <div className="flex flex-col gap-0.5">
+                <p className="text-xs font-medium text-foreground">Super Admin</p>
+                <p className="text-[11px] text-muted-foreground">Global access</p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                <p className="text-[11px]">No tenant selected</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Navigation */}
         <ScrollArea className="flex-1 py-4">
           <nav className="flex flex-col gap-1 px-2">
+            {/* No-tenant warning for non-super-admins */}
+            {hasNoTenantContext && !sidebarCollapsed && (
+              <div className="mb-2 rounded-md bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+                Select a tenant to access all features.
+              </div>
+            )}
+
             {visibleNavItems.map((item) => {
               const Icon = item.icon
               const isActive =
@@ -179,4 +268,12 @@ export function Sidebar() {
       </aside>
     </TooltipProvider>
   )
+}
+
+/** Format a role name for display: TENANT_ADMIN → Tenant Admin */
+function formatRole(role: string): string {
+  return role
+    .split('_')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
 }

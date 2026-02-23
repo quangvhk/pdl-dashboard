@@ -171,3 +171,32 @@ Updated `use-login.ts` to auto-switch tenant when the user belongs to exactly on
 ### Files Created
 - `features/auth/hooks/use-switch-tenant.ts` — `useSwitchTenant` mutation hook: calls `authService.switchTenant({ tenantId })`, updates auth store via `switchTenant()`, syncs tenant store via `setFromAuthStore()`, invalidates all React Query cache (tenant-scoped data), shows success/error toasts
 
+---
+
+## FE-2.3: Update Login and Register Forms
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that both auth forms already have no `tenantSlug` field and no `NEXT_PUBLIC_DEFAULT_TENANT_SLUG` pre-fill — they were cleaned up as part of FE-1.1 downstream fixes. Post-login routing logic (auto-switch for single tenant, redirect to dashboard for multiple/no tenants) is handled in `use-login.ts` and `use-register.ts` hooks (completed in FE-2.2). No additional form changes required.
+
+### Files Verified (no changes needed)
+- `features/auth/components/login-form.tsx` — Contains only `email` and `password` fields; no `tenantSlug`; no `NEXT_PUBLIC_DEFAULT_TENANT_SLUG` reference
+- `features/auth/components/register-form.tsx` — Contains `firstName`, `lastName`, `email`, `password` fields; no `tenantSlug`
+
+---
+
+## FE-2.4: Create Tenant Switcher Component
+
+**Completed:** 2026-02-23
+
+### Summary
+Built the tenant switcher UI for users with multiple tenant memberships. The `TenantSwitcher` dropdown shows all tenant memberships with name, slug, role badge, and status. The current tenant is highlighted with a checkmark. Suspended tenants are shown but not clickable. Super Admin sees a global access indicator. Added `TenantSwitcher` to the header bar (shown when user has tenants). Updated sidebar to show current tenant name/slug/role context below the logo, a "No tenant selected" warning for users without active tenant context, and new navigation items for Members, Invitations, Roles, Permissions, and Role Permissions with correct role-based visibility.
+
+### Files Created
+- `features/auth/components/tenant-switcher.tsx` — Dropdown showing all user tenants; current tenant highlighted with checkmark; SUSPENDED tenants shown but disabled; Super Admin global access indicator; calls `useSwitchTenant` on selection; shows loading state during switch
+
+### Files Modified
+- `components/layout/header.tsx` — Added `TenantSwitcher` component between breadcrumbs and theme toggle; separated by a vertical divider
+- `components/layout/sidebar.tsx` — Added current tenant context section below logo (shows tenant name, slug, role badge; or "Super Admin / Global access"; or "No tenant selected" warning); added new nav items: Members (`/members`, TENANT_ADMIN + SUPER_ADMIN), Invitations (`/invitations`, TENANT_ADMIN + INSTRUCTOR + SUPER_ADMIN), Roles (`/roles`, SUPER_ADMIN only), Permissions (`/permissions`, SUPER_ADMIN only), Role Permissions (`/role-permissions`, TENANT_ADMIN + SUPER_ADMIN); added `superAdminOnly` flag to NavItem interface; added `formatRole()` helper; added no-tenant-context warning banner in nav area
+

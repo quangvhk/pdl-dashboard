@@ -330,3 +330,30 @@ Built the full platform-wide role management UI for Super Admins. Includes query
 - `app/(dashboard)/roles/[roleId]/page.tsx` — Role detail/edit page; role-gated to `SUPER_ADMIN`; fetches role and renders `RoleForm` in edit mode; shows amber warning for system roles
 - `app/(dashboard)/roles/loading.tsx` — Loading skeleton: header, search toolbar, table skeleton
 
+---
+
+## FE-4.4: Create Permissions Feature Module (Super Admin + Tenant Admin)
+
+**Completed:** 2026-02-23
+
+### Summary
+Built the full permission catalog and per-tenant role-permission assignment UI. Includes query/mutation hooks with React Query, Zod schemas for create permission and assign permission forms, a searchable permission catalog table with delete action, a create permission form with action/subject/inverted/conditions/reason fields, a role-permission assignments table with inline remove and an assign-permission dialog that fetches available roles and permissions, and the permissions catalog + new permission + role-permissions pages with loading skeletons. Permission catalog pages are role-gated to `SUPER_ADMIN`. Role-permissions page is role-gated to `TENANT_ADMIN` + `SUPER_ADMIN` and requires an active tenant context.
+
+### Files Created
+- `features/permissions/hooks/use-permissions.ts` — `permissionsQueryKeys` factory + `usePermissions` query hook (5-minute stale time)
+- `features/permissions/hooks/use-create-permission.ts` — `useCreatePermission` mutation; invalidates list; shows "Permission created" toast
+- `features/permissions/hooks/use-delete-permission.ts` — `useDeletePermission` mutation; removes detail cache entry + invalidates list; shows "Permission deleted" toast
+- `features/permissions/hooks/use-role-permissions.ts` — `rolePermissionsQueryKeys` factory + `useRolePermissions` query hook with optional `roleId` filter (2-minute stale time)
+- `features/permissions/hooks/use-assign-permission.ts` — `useAssignPermission` mutation; invalidates all role-permission lists; shows "Permission assigned" toast
+- `features/permissions/hooks/use-remove-role-permission.ts` — `useRemoveRolePermission` mutation; invalidates all role-permission lists; shows "Permission removed" toast
+- `features/permissions/schemas/permission.schema.ts` — `createPermissionSchema` (action + subject + conditions JSON string + inverted + reason) + `assignPermissionSchema` (roleId + permissionId) with Zod; exports `CreatePermissionFormValues` and `AssignPermissionFormValues`
+- `features/permissions/components/permission-table.tsx` — Searchable table (client-side filter); columns: Action (mono), Subject (mono), Type (Allow/Deny badge), Conditions (JSON code), Reason, Actions (Delete with confirmation dialog)
+- `features/permissions/components/permission-form.tsx` — Create permission form card; fields: action, subject, inverted toggle (deny rule), conditions (JSON textarea with validation), reason; redirects to `/permissions` on success
+- `features/permissions/components/role-permission-table.tsx` — Table of role-permission assignments; columns: Role (badge), Action (mono), Subject (mono), Remove button; includes "Assign Permission" toolbar button that opens `AssignPermissionDialog`; accepts optional `roleId` prop for role-scoped views
+- `features/permissions/components/assign-permission-dialog.tsx` — Dialog with role `<Select>` (populated from `GET /roles`) + permission `<Select>` (populated from `GET /permissions`, shows `action:subject` + reason); pre-selects role when `defaultRoleId` prop provided; role select disabled when pre-selected; calls `useAssignPermission` mutation
+- `app/(dashboard)/permissions/page.tsx` — Permission catalog page; role-gated to `SUPER_ADMIN`; "New Permission" button links to `/permissions/new`
+- `app/(dashboard)/permissions/new/page.tsx` — Create permission page; role-gated to `SUPER_ADMIN`; back button to `/permissions`
+- `app/(dashboard)/role-permissions/page.tsx` — Role-permission assignments page; role-gated to `TENANT_ADMIN` + `SUPER_ADMIN`; shows "No tenant selected" message when no `currentTenantId`
+- `app/(dashboard)/permissions/loading.tsx` — Loading skeleton: header, search toolbar, table skeleton (6 columns)
+- `app/(dashboard)/role-permissions/loading.tsx` — Loading skeleton: header, search + action toolbar, table skeleton (4 columns)
+

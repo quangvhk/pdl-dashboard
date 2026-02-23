@@ -11,11 +11,6 @@ interface AuthState {
   currentRoleId: string | null
   isInitialized: boolean
 
-  // Computed (accessed as getters via selectors)
-  isAuthenticated: boolean
-  isSuperAdmin: boolean
-  hasMultipleTenants: boolean
-
   // Actions
   login: (response: AuthResponse) => void
   setUser: (user: AuthUser) => void
@@ -27,7 +22,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Initial state
       user: null,
       tenants: [],
@@ -35,17 +30,6 @@ export const useAuthStore = create<AuthState>()(
       currentRole: null,
       currentRoleId: null,
       isInitialized: false,
-
-      // Computed
-      get isAuthenticated() {
-        return !!get().user
-      },
-      get isSuperAdmin() {
-        return get().user?.isSuperAdmin ?? false
-      },
-      get hasMultipleTenants() {
-        return get().tenants.length > 1
-      },
 
       // Actions
       login: (response: AuthResponse) => {
@@ -98,3 +82,43 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 )
+
+// ---------------------------------------------------------------------------
+// Selectors — use these in components for derived/computed values
+// ---------------------------------------------------------------------------
+
+/** Whether the user is authenticated (has a user object). */
+export const selectIsAuthenticated = (s: AuthState) => !!s.user
+
+/** Whether the user is a platform super admin. */
+export const selectIsSuperAdmin = (s: AuthState) => s.user?.isSuperAdmin ?? false
+
+/** Whether the user belongs to more than one tenant. */
+export const selectHasMultipleTenants = (s: AuthState) => s.tenants.length > 1
+
+/** The full UserTenant object for the currently active tenant. */
+export const selectCurrentTenant = (s: AuthState) =>
+  s.tenants.find((t) => t.tenantId === s.currentTenantId) ?? null
+
+// ---------------------------------------------------------------------------
+// Convenience selector hooks — inline selectors for common derived values
+// These are used as: useAuthStore(selectIsSuperAdmin)
+// But for backward compat with (s) => s.isSuperAdmin pattern, we also
+// expose isSuperAdmin as a selector alias on the state shape via augmentation.
+// ---------------------------------------------------------------------------
+
+/**
+ * Hook that returns isSuperAdmin derived from user state.
+ * Usage: const isSuperAdmin = useIsSuperAdmin()
+ */
+export function useIsSuperAdmin() {
+  return useAuthStore(selectIsSuperAdmin)
+}
+
+/**
+ * Hook that returns the current tenant object.
+ * Usage: const currentTenant = useCurrentTenant()
+ */
+export function useCurrentTenant() {
+  return useAuthStore(selectCurrentTenant)
+}

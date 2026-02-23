@@ -16,7 +16,7 @@ export const currentUserQueryKey = ['auth', 'me'] as const
  * - staleTime: 5 minutes — profile data rarely changes mid-session.
  */
 export function useCurrentUser() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isAuthenticated = useAuthStore((s) => !!s.user)
   const setUser = useAuthStore((s) => s.setUser)
 
   return useQuery({

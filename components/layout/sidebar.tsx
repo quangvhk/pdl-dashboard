@@ -74,7 +74,7 @@ const navigation: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const user = useAuthStore((state) => state.user)
-  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
   const { sidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
 

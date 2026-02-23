@@ -75,7 +75,7 @@ function ThemeOption({ value, label, icon, current, onClick }: ThemeOptionProps)
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore()
-  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
   const currentTenant = useAuthStore((s) =>
     s.tenants.find((t) => t.tenantId === s.currentTenantId),

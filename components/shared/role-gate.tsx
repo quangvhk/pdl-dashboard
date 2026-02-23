@@ -24,7 +24,7 @@ interface RoleGateProps {
  */
 export function RoleGate({ allowedRoles, children, fallback = null }: RoleGateProps) {
   const user = useAuthStore((s) => s.user)
-  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
 
   if (!user) return <>{fallback}</>

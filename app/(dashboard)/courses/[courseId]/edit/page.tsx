@@ -72,7 +72,7 @@ interface PageProps {
 export default function CourseEditPage({ params }: PageProps) {
   const { courseId } = use(params)
   const router = useRouter()
-  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
 
   const canEdit =

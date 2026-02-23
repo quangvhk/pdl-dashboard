@@ -16,7 +16,7 @@ export default function UserDetailPage({
 }) {
   const { userId } = use(params)
   const router = useRouter()
-  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
 
   const canManageUsers = isSuperAdmin || currentRole === 'TENANT_ADMIN'

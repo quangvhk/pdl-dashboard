@@ -55,3 +55,47 @@ Rewrote all TypeScript type definitions to match the V2 multi-tenant backend API
 - `components/layout/mobile-nav.tsx` — Uses `isSuperAdmin`/`currentRole`
 - `components/layout/header.tsx` — Uses `currentRole`
 
+---
+
+## FE-1.2: Update Auth Store for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Rewrote auth store to use proper Zustand selector pattern — removed JavaScript getter properties (incompatible with `persist` middleware) and replaced with exported selector functions and inline selectors. Added `selectIsSuperAdmin`, `selectIsAuthenticated`, `selectHasMultipleTenants`, `selectCurrentTenant` selectors plus `useIsSuperAdmin()` and `useCurrentTenant()` convenience hooks.
+
+### Files Modified
+- `stores/auth.store.ts` — Removed computed getter properties (`isAuthenticated`, `isSuperAdmin`, `hasMultipleTenants`) from `AuthState` interface; added exported selector functions (`selectIsAuthenticated`, `selectIsSuperAdmin`, `selectHasMultipleTenants`, `selectCurrentTenant`) and convenience hooks (`useIsSuperAdmin`, `useCurrentTenant`)
+
+### Downstream Fixes (required for TypeScript to compile)
+- `components/shared/role-gate.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `components/layout/mobile-nav.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `components/layout/sidebar.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `features/auth/hooks/use-current-user.ts` — `s.isAuthenticated` → `!!s.user`
+- `features/courses/components/course-detail.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `features/enrollments/hooks/use-enrollments.ts` — `s.isAuthenticated` → `!!s.user`
+- `app/(dashboard)/users/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/users/new/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/users/[userId]/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/tenants/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/tenants/new/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/tenants/[tenantId]/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/settings/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/dashboard/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/courses/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/courses/new/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/courses/[courseId]/edit/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+- `app/(dashboard)/courses/[courseId]/enrollments/page.tsx` — `s.isSuperAdmin` → `s.user?.isSuperAdmin ?? false`
+
+---
+
+## FE-1.3: Update Tenant Store for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Simplified tenant store to be a thin sync layer for the current tenant context. Added `setFromAuthStore()` action that accepts `tenantId`, `tenantSlug`, `tenantName` to be called after `switchTenant()` resolves in the auth store. Kept `setTenant()` for backward compatibility with the API client's `getTenantId()` getter. Kept `clearTenant()` for logout flow.
+
+### Files Modified
+- `stores/tenant.store.ts` — Added `setFromAuthStore(tenantId, tenantSlug, tenantName)` action; kept `setTenant()` and `clearTenant()`; removed no-op computed properties; store remains persisted to sessionStorage
+

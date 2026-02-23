@@ -13,7 +13,7 @@ export const enrollmentsQueryKeys = {
 }
 
 export function useMyEnrollments() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isAuthenticated = useAuthStore((s) => !!s.user)
 
   return useQuery({
     queryKey: enrollmentsQueryKeys.mine(),

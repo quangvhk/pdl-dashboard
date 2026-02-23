@@ -117,7 +117,7 @@ export default function CourseEnrollmentsPage({
   const [page, setPage] = useState(1)
 
   // Role gate — only Instructor, Admin, SuperAdmin
-  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
   const canView =
     isSuperAdmin ||

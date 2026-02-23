@@ -212,3 +212,51 @@ Updated the user menu dropdown to reflect the V2 auth model. Removed role displa
 ### Files Modified
 - `features/auth/components/user-menu.tsx` — Added `isSuperAdmin` badge next to display name; added current tenant name + role row using `Building2` icon; added "Global access" fallback for Super Admin without tenant; imported `Badge`, `ShieldCheck`, `Building2`; imported `selectCurrentTenant`, `selectIsSuperAdmin` from auth store; widened dropdown to `w-64`; role string formatted to title case
 
+---
+
+## FE-3.1: Update RoleGate Component
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that `RoleGate` was already fully updated for V2 as part of FE-1.1/FE-1.2 downstream fixes. The component reads `currentRole` (single role per tenant) and `isSuperAdmin` from the auth store. Super Admin always bypasses all role gates. When `currentRole === null` (no tenant selected), access is denied for tenant-scoped pages.
+
+### Files Verified (no changes needed)
+- `components/shared/role-gate.tsx` — Reads `currentRole` and `user?.isSuperAdmin ?? false` from auth store; Super Admin bypasses all gates; `currentRole === null` denies access; `allowedRoles.includes(currentRole)` for single role match
+
+---
+
+## FE-3.2: Update Sidebar Navigation for V2 Roles
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that the sidebar was already fully updated for V2 as part of FE-2.4 downstream fixes. The sidebar uses `currentRole` and `isSuperAdmin` for role-based nav filtering, shows current tenant context below the logo, includes all new nav items (Members, Invitations, Roles, Permissions, Role Permissions), and shows a no-tenant warning banner.
+
+### Files Verified (no changes needed)
+- `components/layout/sidebar.tsx` — Uses `currentRole`/`isSuperAdmin` for nav filtering; `superAdminOnly` flag on nav items; tenant context section below logo; no-tenant warning banner; all new nav items present
+
+---
+
+## FE-3.3: Update Dashboard Page for V2 Roles
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that the dashboard page was already fully updated for V2 as part of FE-1.1/FE-1.2 downstream fixes. The page uses `isSuperAdmin` and `currentRole` checks (single role string comparisons) to render the correct dashboard variant for each role.
+
+### Files Verified (no changes needed)
+- `app/(dashboard)/dashboard/page.tsx` — Uses `s.user?.isSuperAdmin ?? false` and `currentRole === 'TENANT_ADMIN'` / `currentRole === 'INSTRUCTOR'` checks; renders `SuperAdminDashboard`, `TenantAdminDashboard`, `InstructorDashboard`, or `StudentDashboard` accordingly
+
+---
+
+## FE-3.4: Update Middleware for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Updated Next.js middleware to use the V2 httpOnly cookie-based auth model. Replaced `accessToken`/`refreshToken` cookie checks with a single `auth-status` cookie check (a non-httpOnly indicator cookie set by the backend). Added `/invitations/accept` to public routes so invitation acceptance works without authentication.
+
+### Files Modified
+- `middleware.ts` — Replaced `hasAccessToken || hasRefreshToken` check with `hasAuthStatus` (`auth-status` cookie); added `/invitations/accept` to `PUBLIC_ROUTES`; updated comments to explain V2 cookie strategy
+

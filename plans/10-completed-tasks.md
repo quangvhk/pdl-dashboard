@@ -416,3 +416,103 @@ Added `ownerId` display and transfer ownership functionality to the tenants feat
 - `features/tenants/components/tenant-table.tsx` — Added Owner column (shows `ownerId` with `UserCircle2` icon); moved Created column to `hidden xl:table-cell` to accommodate new column
 - `features/tenants/components/tenant-detail.tsx` — Added `ownerId` to meta grid (4-column layout); added Transfer Ownership card (amber-bordered, visible to Super Admin or current owner); Transfer Ownership dialog with new owner user ID input + confirmation warning; imported `useTransferOwnership`, `selectIsSuperAdmin`, `Dialog`/`DialogContent`/`DialogDescription`/`DialogFooter`/`DialogHeader`/`DialogTitle`/`DialogTrigger`, `UserCircle2`, `ArrowRightLeft`
 
+---
+
+## FE-5.4: Update Courses Feature for V2 Role Checks
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that all course feature files were already fully updated for V2 role checks as part of FE-1.1/FE-1.2 downstream fixes. All files use `currentRole` (single role string) and `isSuperAdmin` from the auth store instead of the old `user.roles[]` array pattern.
+
+### Files Verified (no changes needed)
+- `features/courses/components/course-detail.tsx` — Uses `s.user?.isSuperAdmin ?? false` and `s.currentRole`; `canEdit = isInstructor || isAdmin`
+- `features/courses/components/course-list.tsx` — Pure presentational component; no role checks needed
+- `app/(dashboard)/courses/page.tsx` — Uses `isSuperAdmin` and `currentRole`; derives `isInstructor`, `isAdmin`, `isStudent`, `canCreate`, `showStatus`
+- `app/(dashboard)/courses/[courseId]/edit/page.tsx` — Uses `isSuperAdmin` and `currentRole`; `canEdit` gate with access-denied UI
+- `app/(dashboard)/courses/new/page.tsx` — Uses `isSuperAdmin` and `currentRole`; `canCreate` gate with access-denied UI
+- `features/courses/components/lesson-viewer.tsx` — Uses `isCompleted` (V2 field name) in `updateProgress` call; no role checks needed in viewer
+- `app/(dashboard)/courses/[courseId]/enrollments/page.tsx` — Uses `isSuperAdmin` and `currentRole`; `canView` and `canGrantAccess` flags
+
+---
+
+## FE-5.5: Update Settings Page for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Updated the settings page to show full multi-tenant membership information. Added a "Tenant Memberships" section listing all tenant memberships with name, slug, role badge, active/suspended status, and an "Active" indicator for the current tenant. Added a Super Admin notice card for platform admins. Updated the Account section to show "Active Tenant" with a "Global access" fallback for Super Admins without a selected tenant. Replaced single `currentTenant` selector with direct `tenants` array + `currentTenantId` from auth store.
+
+### Files Modified
+- `app/(dashboard)/settings/page.tsx` — Added `ShieldCheck` import; replaced `currentTenant` selector with `tenants` array + `currentTenantId`; updated Account card to show "Active Tenant" with global access fallback; added Tenant Memberships list (name, slug, role badge, active/suspended indicators); added Super Admin notice card
+
+---
+
+## FE-6.1: Update Environment Configuration
+
+**Completed:** 2026-02-23
+
+### Summary
+Removed `NEXT_PUBLIC_DEFAULT_TENANT_SLUG` from both `.env.local` and `.env.example` — no longer needed since login no longer requires a tenant slug. Added `NEXT_PUBLIC_GLOBAL_DOMAIN=localhost:3001` for the global (non-tenant) domain used in development.
+
+### Files Modified
+- `.env.local` — Removed `NEXT_PUBLIC_DEFAULT_TENANT_SLUG=demo`; added `NEXT_PUBLIC_GLOBAL_DOMAIN=localhost:3001`
+- `.env.example` — Removed `NEXT_PUBLIC_DEFAULT_TENANT_SLUG=demo`; added `NEXT_PUBLIC_GLOBAL_DOMAIN=localhost:3001`
+
+---
+
+## FE-6.2: Update API Client for Subdomain Routing
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that `lib/api/client.ts` was already correct for V2. The client uses `credentials: 'include'` on all requests (httpOnly cookies sent automatically), injects `x-tenant-id` header from the tenant store, has no `Authorization: Bearer` token logic, and handles 401 by attempting a cookie-based refresh via `POST /auth/refresh`. No changes required.
+
+### Files Verified (no changes needed)
+- `lib/api/client.ts` — `credentials: 'include'` on all requests; `x-tenant-id` header from tenant store; no Bearer token logic; 401 → `POST /auth/refresh` (cookie-based); `onAuthError` clears auth store and redirects to `/login`
+
+---
+
+## FE-7.1: Add Loading Skeletons for New Pages
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that all new page loading skeletons were already created as part of FE-4.1–FE-4.4. The only missing skeleton was `app/(dashboard)/roles/[roleId]/loading.tsx` (the role edit/detail page), which was created.
+
+### Files Verified (already existed)
+- `app/(dashboard)/members/loading.tsx` — Created in FE-4.1
+- `app/(dashboard)/members/[memberId]/loading.tsx` — Created in FE-4.1
+- `app/(dashboard)/invitations/loading.tsx` — Created in FE-4.2
+- `app/(dashboard)/roles/loading.tsx` — Created in FE-4.3
+- `app/(dashboard)/permissions/loading.tsx` — Created in FE-4.4
+- `app/(dashboard)/role-permissions/loading.tsx` — Created in FE-4.4
+
+### Files Created
+- `app/(dashboard)/roles/[roleId]/loading.tsx` — Loading skeleton for role edit page: header, form card with name/description fields, action buttons
+
+---
+
+## FE-7.2: Add Toast Notifications for New Mutations
+
+**Completed:** 2026-02-23
+
+### Summary
+Verified that all mutation hooks already include success and error toast notifications. All hooks use `sonner` toast with descriptive messages.
+
+### Files Verified (no changes needed)
+- `features/auth/hooks/use-switch-tenant.ts` — "Switched to [tenant name]" + role description toast
+- `features/members/hooks/use-change-role.ts` — "Role updated" toast
+- `features/members/hooks/use-suspend-member.ts` — "Member suspended" / "Member activated" toasts
+- `features/members/hooks/use-remove-member.ts` — "Member removed" toast
+- `features/invitations/hooks/use-create-invitation.ts` — "Invitation sent to [email]" toast
+- `features/invitations/hooks/use-cancel-invitation.ts` — "Invitation cancelled" toast
+- `features/invitations/hooks/use-accept-invitation.ts` — "Invitation accepted!" toast
+- `features/roles/hooks/use-create-role.ts` — "Role created" toast
+- `features/roles/hooks/use-update-role.ts` — "Role updated" toast
+- `features/roles/hooks/use-delete-role.ts` — "Role deleted" toast
+- `features/permissions/hooks/use-create-permission.ts` — "Permission created" toast
+- `features/permissions/hooks/use-delete-permission.ts` — "Permission deleted" toast
+- `features/permissions/hooks/use-assign-permission.ts` — "Permission assigned" toast
+- `features/permissions/hooks/use-remove-role-permission.ts` — "Permission removed" toast
+

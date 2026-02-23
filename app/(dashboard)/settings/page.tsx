@@ -17,6 +17,7 @@ import {
   Sun,
   Moon,
   Monitor,
+  ShieldCheck,
 } from 'lucide-react'
 import { updateUserSchema, type UpdateUserFormValues } from '@/features/users/schemas/user.schema'
 import { usersService } from '@/lib/api/services/users.service'
@@ -77,9 +78,9 @@ export default function SettingsPage() {
   const { user, setUser } = useAuthStore()
   const isSuperAdmin = useAuthStore((s) => s.user?.isSuperAdmin ?? false)
   const currentRole = useAuthStore((s) => s.currentRole)
-  const currentTenant = useAuthStore((s) =>
-    s.tenants.find((t) => t.tenantId === s.currentTenantId),
-  )
+  const currentTenantId = useAuthStore((s) => s.currentTenantId)
+  const tenants = useAuthStore((s) => s.tenants)
+  const currentTenant = tenants.find((t) => t.tenantId === currentTenantId)
   const tenantName = currentTenant?.tenantName ?? null
   const { theme, setTheme } = useTheme()
   const [updateError, setUpdateError] = useState<string | null>(null)
@@ -324,15 +325,18 @@ export default function SettingsPage() {
           </CardTitle>
           <CardDescription>Read-only account information.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {/* Role */}
             <div className="flex items-start gap-3">
               <Shield className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                <p className="text-muted-foreground mb-1 text-xs">Role</p>
+                <p className="text-muted-foreground mb-1 text-xs">Current Role</p>
                 {isSuperAdmin ? (
-                  <Badge variant="destructive" className="text-xs">Super Admin</Badge>
+                  <Badge variant="destructive" className="flex items-center gap-1 text-xs w-fit">
+                    <ShieldCheck className="h-3 w-3" />
+                    Super Admin
+                  </Badge>
                 ) : currentRole ? (
                   <Badge variant="secondary" className="text-xs">
                     {formatRole(currentRole)}
@@ -343,16 +347,20 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Tenant */}
+            {/* Active Tenant */}
             <div className="flex items-start gap-3">
               <Building2 className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                <p className="text-muted-foreground mb-1 text-xs">Tenant</p>
-                <p className="text-sm font-medium">{tenantName ?? '—'}</p>
+                <p className="text-muted-foreground mb-1 text-xs">Active Tenant</p>
+                {isSuperAdmin && !tenantName ? (
+                  <span className="text-muted-foreground text-sm">Global access</span>
+                ) : (
+                  <p className="text-sm font-medium">{tenantName ?? '—'}</p>
+                )}
               </div>
             </div>
 
-            {/* Member since — AuthUser has no createdAt; show tenant ID as fallback */}
+            {/* Member since */}
             <div className="flex items-start gap-3">
               <Calendar className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
               <div>
@@ -361,6 +369,72 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+
+          {/* ── Tenant Memberships ─────────────────────────────────────── */}
+          {tenants.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <p className="text-sm font-medium mb-3">Tenant Memberships</p>
+                <div className="space-y-2">
+                  {tenants.map((t) => {
+                    const isActive = t.tenantId === currentTenantId
+                    const isSuspended = t.status === 'SUSPENDED'
+                    return (
+                      <div
+                        key={t.tenantId}
+                        className={`flex items-center justify-between rounded-lg border px-3 py-2.5 ${
+                          isActive ? 'border-primary/40 bg-primary/5' : 'border-border'
+                        } ${isSuspended ? 'opacity-60' : ''}`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{t.tenantName}</p>
+                            <p className="text-xs text-muted-foreground truncate">@{t.tenantSlug}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 ml-3">
+                          <Badge
+                            variant={isSuspended ? 'destructive' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {formatRole(t.roleName)}
+                          </Badge>
+                          {isActive && (
+                            <Badge variant="outline" className="text-xs text-primary border-primary/40">
+                              Active
+                            </Badge>
+                          )}
+                          {isSuspended && (
+                            <Badge variant="destructive" className="text-xs">
+                              Suspended
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── Super Admin note ───────────────────────────────────────── */}
+          {isSuperAdmin && (
+            <>
+              {tenants.length > 0 && <Separator />}
+              <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5">
+                <ShieldCheck className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-destructive">Super Admin</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    You have platform-wide administrative access across all tenants.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

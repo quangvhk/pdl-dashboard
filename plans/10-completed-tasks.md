@@ -200,3 +200,15 @@ Built the tenant switcher UI for users with multiple tenant memberships. The `Te
 - `components/layout/header.tsx` — Added `TenantSwitcher` component between breadcrumbs and theme toggle; separated by a vertical divider
 - `components/layout/sidebar.tsx` — Added current tenant context section below logo (shows tenant name, slug, role badge; or "Super Admin / Global access"; or "No tenant selected" warning); added new nav items: Members (`/members`, TENANT_ADMIN + SUPER_ADMIN), Invitations (`/invitations`, TENANT_ADMIN + INSTRUCTOR + SUPER_ADMIN), Roles (`/roles`, SUPER_ADMIN only), Permissions (`/permissions`, SUPER_ADMIN only), Role Permissions (`/role-permissions`, TENANT_ADMIN + SUPER_ADMIN); added `superAdminOnly` flag to NavItem interface; added `formatRole()` helper; added no-tenant-context warning banner in nav area
 
+---
+
+## FE-2.5: Update User Menu Component
+
+**Completed:** 2026-02-23
+
+### Summary
+Updated the user menu dropdown to reflect the V2 auth model. Removed role display from `user.roles` array (already cleaned up in FE-1.1). Added `isSuperAdmin` badge (red "Super Admin" badge with shield icon) shown next to the display name. Added current tenant name + role display using `selectCurrentTenant` and `selectIsSuperAdmin` selectors from the auth store. Super Admin without a tenant context shows "Global access" indicator. Role string is title-cased for display (e.g. `TENANT_ADMIN` → `Tenant Admin`). Kept profile/settings/logout actions unchanged.
+
+### Files Modified
+- `features/auth/components/user-menu.tsx` — Added `isSuperAdmin` badge next to display name; added current tenant name + role row using `Building2` icon; added "Global access" fallback for Super Admin without tenant; imported `Badge`, `ShieldCheck`, `Building2`; imported `selectCurrentTenant`, `selectIsSuperAdmin` from auth store; widened dropdown to `w-64`; role string formatted to title case
+

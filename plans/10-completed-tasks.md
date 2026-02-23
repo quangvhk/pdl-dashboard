@@ -385,6 +385,23 @@ Simplified user management for V2: removed tenant-scoped user creation and role 
 
 ---
 
+## FE-5.3: Update Enrollments Feature for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Updated the enrollments feature to support the dual enrollment model (self-enroll + admin-granted). Added `useGrantEnrollment` mutation hook for admin/instructor-initiated enrollment. Created `GrantEnrollmentDialog` component that fetches active tenant members and lets admins/instructors grant course access to a specific user. Updated `EnrollmentCard` to display enrollment source ("Self-enrolled" or "Granted by admin") using the `grantedBy` field. Updated the course enrollments page to show a "Grant Access" button for admins and instructors, and added a "Source" column to the enrollments table.
+
+### Files Modified
+- `features/enrollments/hooks/use-enroll.ts` — Added `useGrantEnrollment(courseId)` mutation hook; calls `enrollmentsService.grantEnrollment()`; invalidates `byCourse` cache; shows "Access granted!" toast
+- `features/enrollments/components/enrollment-card.tsx` — Added `grantedBy` display row with `UserCheck` icon; shows "Granted by admin" when `grantedBy` is set, "Self-enrolled" otherwise
+- `app/(dashboard)/courses/[courseId]/enrollments/page.tsx` — Added `GrantEnrollmentDialog` import; added `canGrantAccess` flag (TENANT_ADMIN + INSTRUCTOR + SUPER_ADMIN); added "Grant Access" button in page header actions; added "Source" column to enrollments table showing "Admin granted" or "Self-enrolled"
+
+### Files Created
+- `features/enrollments/components/grant-enrollment-dialog.tsx` — Dialog for admin/instructor to grant course access; fetches active members via `GET /members?status=ACTIVE` (lazy-loaded on dialog open); member select shows name + email; calls `useGrantEnrollment` mutation on confirm; resets state on close
+
+---
+
 ## FE-5.2: Update Tenants Feature for V2
 
 **Completed:** 2026-02-23

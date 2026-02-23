@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, Calendar, CheckCircle2, Clock, PlayCircle } from 'lucide-react'
+import { BookOpen, Calendar, CheckCircle2, Clock, PlayCircle, UserCheck } from 'lucide-react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -101,6 +101,15 @@ export function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
               <span>Completed {completedDate}</span>
             </div>
           )}
+          {/* Granted-by indicator */}
+          <div className="flex items-center gap-1.5">
+            <UserCheck className="h-3.5 w-3.5 shrink-0" />
+            {enrollment.grantedBy ? (
+              <span>Granted by admin</span>
+            ) : (
+              <span>Self-enrolled</span>
+            )}
+          </div>
         </div>
 
         {/* Progress */}

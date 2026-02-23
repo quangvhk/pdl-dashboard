@@ -12,6 +12,7 @@ import { DataTable, DataTableColumn } from '@/components/shared/data-table'
 import { Pagination } from '@/components/shared/pagination'
 import { useCourse } from '@/features/courses/hooks/use-course'
 import { useCourseEnrollments } from '@/features/enrollments/hooks/use-course-enrollments'
+import { GrantEnrollmentDialog } from '@/features/enrollments/components/grant-enrollment-dialog'
 import { useAuthStore } from '@/stores/auth.store'
 import type { Enrollment, EnrollmentStatus } from '@/types'
 import { format } from 'date-fns'
@@ -101,6 +102,16 @@ const columns: DataTableColumn<Enrollment>[] = [
         <span className="text-muted-foreground text-sm">—</span>
       ),
   },
+  {
+    key: 'grantedBy',
+    header: 'Source',
+    className: 'hidden xl:table-cell',
+    cell: (row) => (
+      <span className="text-muted-foreground text-sm">
+        {row.grantedBy ? 'Admin granted' : 'Self-enrolled'}
+      </span>
+    ),
+  },
 ]
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -123,6 +134,12 @@ export default function CourseEnrollmentsPage({
     isSuperAdmin ||
     currentRole === 'INSTRUCTOR' ||
     currentRole === 'TENANT_ADMIN'
+
+  // Only admins and instructors can grant access
+  const canGrantAccess =
+    isSuperAdmin ||
+    currentRole === 'TENANT_ADMIN' ||
+    currentRole === 'INSTRUCTOR'
 
   const { data: course, isLoading: courseLoading } = useCourse(courseId)
   const {
@@ -179,12 +196,15 @@ export default function CourseEnrollmentsPage({
             : `Manage and track student progress for this course`
         }
         actions={
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/courses/${courseId}`}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Course
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {canGrantAccess && <GrantEnrollmentDialog courseId={courseId} />}
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/courses/${courseId}`}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Course
+              </Link>
+            </Button>
+          </div>
         }
       />
 

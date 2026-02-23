@@ -307,3 +307,26 @@ Built the full invitation management UI. Includes query/mutation hooks with Reac
 - `app/(auth)/invitations/accept/page.tsx` — Public invitation acceptance page in auth layout group; wraps `AcceptInvitationPage` in `<Suspense>` for `useSearchParams`
 - `app/(dashboard)/invitations/loading.tsx` — Loading skeleton: header, search toolbar, table skeleton
 
+---
+
+## FE-4.3: Create Roles Feature Module (Super Admin)
+
+**Completed:** 2026-02-23
+
+### Summary
+Built the full platform-wide role management UI for Super Admins. Includes query/mutation hooks with React Query, Zod schemas for create/update forms, a searchable role table with system-role protection, a shared create/edit role form, and the roles list + detail/edit + new role pages with loading skeleton. All pages are role-gated to `SUPER_ADMIN`. System roles are shown as read-only with a lock indicator; only custom roles can be edited or deleted.
+
+### Files Created
+- `features/roles/hooks/use-roles.ts` — `rolesQueryKeys` factory + `useRoles` query hook (5-minute stale time)
+- `features/roles/hooks/use-role.ts` — Single role query using `rolesQueryKeys.detail`
+- `features/roles/hooks/use-create-role.ts` — `useCreateRole` mutation; invalidates list; shows "Role created" toast
+- `features/roles/hooks/use-update-role.ts` — `useUpdateRole` mutation; updates detail cache + invalidates list; shows "Role updated" toast
+- `features/roles/hooks/use-delete-role.ts` — `useDeleteRole` mutation; removes detail cache entry + invalidates list; shows "Role deleted" toast
+- `features/roles/schemas/role.schema.ts` — `createRoleSchema` + `updateRoleSchema` (Zod); name must be uppercase/digits/underscores; exports `CreateRoleFormValues` and `UpdateRoleFormValues`
+- `features/roles/components/role-table.tsx` — Searchable table (client-side filter); columns: Name (with System badge), Description, Created; system roles show lock indicator instead of actions dropdown; custom roles have Edit + Delete (with confirmation dialog) actions; row click navigates to edit page (custom roles only)
+- `features/roles/components/role-form.tsx` — Shared create/edit form card; edit mode pre-fills name + description; system roles blocked with amber warning banner; redirects to `/roles` on success; Cancel navigates back
+- `app/(dashboard)/roles/page.tsx` — Roles list page; role-gated to `SUPER_ADMIN`; "New Role" button links to `/roles/new`
+- `app/(dashboard)/roles/new/page.tsx` — Create role page; role-gated to `SUPER_ADMIN`; back button to `/roles`
+- `app/(dashboard)/roles/[roleId]/page.tsx` — Role detail/edit page; role-gated to `SUPER_ADMIN`; fetches role and renders `RoleForm` in edit mode; shows amber warning for system roles
+- `app/(dashboard)/roles/loading.tsx` — Loading skeleton: header, search toolbar, table skeleton
+

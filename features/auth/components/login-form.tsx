@@ -28,7 +28,6 @@ export function LoginForm() {
     defaultValues: {
       email: '',
       password: '',
-      tenantSlug: process.env.NEXT_PUBLIC_DEFAULT_TENANT_SLUG ?? '',
     },
   })
 
@@ -95,22 +94,6 @@ export function LoginForm() {
           </div>
           {errors.password && (
             <p className="text-destructive text-xs">{errors.password.message}</p>
-          )}
-        </div>
-
-        {/* Tenant Slug */}
-        <div className="space-y-1.5">
-          <Label htmlFor="tenantSlug">Tenant</Label>
-          <Input
-            id="tenantSlug"
-            type="text"
-            autoComplete="organization"
-            placeholder="your-organization"
-            aria-invalid={!!errors.tenantSlug}
-            {...register('tenantSlug')}
-          />
-          {errors.tenantSlug && (
-            <p className="text-destructive text-xs">{errors.tenantSlug.message}</p>
           )}
         </div>
 

@@ -300,10 +300,11 @@ interface CourseDetailProps {
 export function CourseDetail({ courseId }: CourseDetailProps) {
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
 
-  const roles = user?.roles ?? []
-  const isInstructor = roles.includes('INSTRUCTOR')
-  const isAdmin = roles.includes('TENANT_ADMIN') || roles.includes('SUPER_ADMIN')
+  const isInstructor = currentRole === 'INSTRUCTOR'
+  const isAdmin = isSuperAdmin || currentRole === 'TENANT_ADMIN'
   const canEdit = isInstructor || isAdmin
 
   const { data: course, isLoading: courseLoading, isError: courseError } = useCourse(courseId)

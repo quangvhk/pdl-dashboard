@@ -35,7 +35,7 @@ export function UserMenu() {
     ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email
     : ''
 
-  const primaryRole = user?.roles?.[0] ?? ''
+  const primaryRole = useAuthStore((s) => s.currentRole) ?? ''
 
   return (
     <DropdownMenu>

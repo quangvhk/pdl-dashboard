@@ -39,10 +39,11 @@ const STATUS_OPTIONS: { value: CourseStatus | 'ALL'; label: string }[] = [
 export default function CoursesPage() {
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
 
-  const roles = user?.roles ?? []
-  const isInstructor = roles.includes('INSTRUCTOR')
-  const isAdmin = roles.includes('TENANT_ADMIN') || roles.includes('SUPER_ADMIN')
+  const isInstructor = currentRole === 'INSTRUCTOR'
+  const isAdmin = isSuperAdmin || currentRole === 'TENANT_ADMIN'
   const isStudent = !isInstructor && !isAdmin
   const canCreate = isInstructor || isAdmin
   const showStatus = isInstructor || isAdmin

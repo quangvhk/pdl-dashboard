@@ -17,13 +17,25 @@ interface RoleGateProps {
 /**
  * Conditionally renders `children` only when the authenticated user has at
  * least one of the `allowedRoles`. Renders `fallback` (or nothing) otherwise.
+ *
+ * V2: reads `currentRole` (single role per tenant) and `isSuperAdmin` from auth store.
+ * Super Admin always passes any role gate.
+ * If no tenant is selected (`currentRole === null`), access is denied for tenant-scoped pages.
  */
 export function RoleGate({ allowedRoles, children, fallback = null }: RoleGateProps) {
   const user = useAuthStore((s) => s.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
 
   if (!user) return <>{fallback}</>
 
-  const hasRole = user.roles.some((role) => allowedRoles.includes(role as Role))
+  // Super Admin bypasses all role gates
+  if (isSuperAdmin) return <>{children}</>
+
+  // No tenant selected — deny access to tenant-scoped pages
+  if (!currentRole) return <>{fallback}</>
+
+  const hasRole = allowedRoles.includes(currentRole as Role)
 
   return hasRole ? <>{children}</> : <>{fallback}</>
 }

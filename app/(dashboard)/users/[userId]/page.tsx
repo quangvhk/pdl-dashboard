@@ -16,11 +16,10 @@ export default function UserDetailPage({
 }) {
   const { userId } = use(params)
   const router = useRouter()
-  const user = useAuthStore((s) => s.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
 
-  const roles = user?.roles ?? []
-  const canManageUsers =
-    roles.includes('TENANT_ADMIN') || roles.includes('SUPER_ADMIN')
+  const canManageUsers = isSuperAdmin || currentRole === 'TENANT_ADMIN'
 
   // ── Access denied ─────────────────────────────────────────────────────────────
   if (!canManageUsers) {

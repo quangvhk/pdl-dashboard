@@ -8,9 +8,7 @@ import { Button } from '@/components/ui/button'
 import { TenantTable } from '@/features/tenants/components/tenant-table'
 
 export default function TenantsPage() {
-  const user = useAuthStore((s) => s.user)
-  const roles = user?.roles ?? []
-  const isSuperAdmin = roles.includes('SUPER_ADMIN')
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
 
   // ── Role gate ─────────────────────────────────────────────────────────────────
   if (!isSuperAdmin) {

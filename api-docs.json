@@ -21,7 +21,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthResponseDto"
+                  "$ref": "#/components/schemas/CookieAuthResponseDto"
                 }
               }
             }
@@ -30,10 +30,10 @@
             "description": "Validation error"
           },
           "409": {
-            "description": "Email already exists in this tenant"
+            "description": "Email already registered"
           }
         },
-        "summary": "Register a new student account",
+        "summary": "Register a new user account (no tenant assignment at registration)",
         "tags": [
           "auth"
         ]
@@ -59,7 +59,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthResponseDto"
+                  "$ref": "#/components/schemas/CookieAuthResponseDto"
                 }
               }
             }
@@ -68,7 +68,47 @@
             "description": "Invalid credentials or account locked"
           }
         },
-        "summary": "Login with email, password, and tenant slug",
+        "summary": "Login with email and password — returns user + tenant memberships list",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/switch-tenant": {
+      "post": {
+        "operationId": "AuthController_switchTenant_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant switched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CookieSwitchTenantResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a member of this tenant or membership suspended"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Switch active tenant context — issues new JWT scoped to the selected tenant",
         "tags": [
           "auth"
         ]
@@ -78,23 +118,13 @@
       "post": {
         "operationId": "AuthController_refresh_v1",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshTokenDto"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "New token pair issued",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TokensResponseDto"
+                  "$ref": "#/components/schemas/CookieRefreshResponseDto"
                 }
               }
             }
@@ -103,7 +133,7 @@
             "description": "Invalid or expired refresh token"
           }
         },
-        "summary": "Refresh access token using refresh token (single-use rotation)",
+        "summary": "Refresh access token using refresh token from HttpOnly cookie (single-use rotation)",
         "tags": [
           "auth"
         ]
@@ -115,7 +145,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Logged out successfully"
+            "description": "Logged out successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponseDto"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
@@ -138,7 +175,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Current user profile"
+            "description": "Current user profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUserDto"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
@@ -149,7 +193,7 @@
             "JWT": []
           }
         ],
-        "summary": "Get current authenticated user profile",
+        "summary": "Get current authenticated user profile with tenant memberships",
         "tags": [
           "auth"
         ]
@@ -254,7 +298,7 @@
             "JWT": []
           }
         ],
-        "summary": "List all tenants (Super Admin only)",
+        "summary": "List tenants — Super Admin sees all, others see own tenants",
         "tags": [
           "tenants"
         ]
@@ -395,33 +439,35 @@
         ]
       }
     },
-    "/api/v1/users": {
-      "post": {
-        "operationId": "UsersController_create_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
+    "/api/v1/tenants/{id}/transfer-ownership": {
+      "patch": {
+        "operationId": "TenantsController_transferOwnership_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
-          "201": {
-            "description": "User created",
+          "200": {
+            "description": "Ownership transferred",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/TenantResponseDto"
                 }
               }
             }
           },
-          "409": {
-            "description": "Email already exists in this tenant"
+          "403": {
+            "description": "Not authorized to transfer ownership"
+          },
+          "404": {
+            "description": "Tenant not found"
           }
         },
         "security": [
@@ -429,11 +475,907 @@
             "JWT": []
           }
         ],
-        "summary": "Create a new user in the tenant (Tenant Admin only)",
+        "summary": "Transfer tenant ownership (Super Admin or current owner)",
         "tags": [
-          "users"
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/members": {
+      "get": {
+        "operationId": "MembersController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "example": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "asc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "roleId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by role ID (FK to Role table)",
+            "schema": {
+              "example": "uuid-of-role",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by member status",
+            "schema": {
+              "example": "ACTIVE",
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "SUSPENDED"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by user email, firstName, or lastName",
+            "schema": {
+              "example": "alice",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated member list"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List members of the current tenant (Tenant Admin + Super Admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/v1/members/{id}": {
+      "get": {
+        "operationId": "MembersController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get a member by ID (Tenant Admin + Super Admin)",
+        "tags": [
+          "members"
         ]
       },
+      "delete": {
+        "operationId": "MembersController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member removed"
+          },
+          "403": {
+            "description": "Cannot remove yourself"
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Remove a member from the tenant (Tenant Admin + Super Admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/v1/members/{id}/role": {
+      "patch": {
+        "operationId": "MembersController_changeRole_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cannot change own role or assign SUPER_ADMIN"
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Change the role of a member (Tenant Admin + Super Admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/v1/members/{id}/suspend": {
+      "patch": {
+        "operationId": "MembersController_suspend_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member suspended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cannot suspend yourself"
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Suspend a member (Tenant Admin + Super Admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/v1/members/{id}/activate": {
+      "patch": {
+        "operationId": "MembersController_activate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member activated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Activate a suspended member (Tenant Admin + Super Admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/v1/invitations": {
+      "post": {
+        "operationId": "InvitationsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Instructor can only invite STUDENT role"
+          },
+          "409": {
+            "description": "Duplicate invitation or member already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create an invitation (Tenant Admin or Instructor)",
+        "tags": [
+          "invitations"
+        ]
+      },
+      "get": {
+        "operationId": "InvitationsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of invitations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all invitations for the current tenant (Tenant Admin)",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/invitations/{id}": {
+      "delete": {
+        "operationId": "InvitationsController_cancel_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invitation not found"
+          },
+          "409": {
+            "description": "Invitation is not in PENDING status"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Cancel an invitation (Tenant Admin)",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/invitations/accept": {
+      "post": {
+        "description": "Accepts an invitation using the token from the invitation link. If the caller is authenticated (JWT present), their user ID is used. If unauthenticated, the system looks up the user by the invitation email. If no account exists, a message is returned asking the user to register first.",
+        "operationId": "AcceptInvitationController_accept_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation accepted or registration required"
+          },
+          "400": {
+            "description": "Invitation expired or already used"
+          },
+          "404": {
+            "description": "Invalid token"
+          }
+        },
+        "summary": "Accept an invitation by token (Public or authenticated)",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/roles": {
+      "get": {
+        "operationId": "RolesController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all platform-wide roles (authenticated)",
+        "tags": [
+          "roles"
+        ]
+      },
+      "post": {
+        "operationId": "RolesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Role created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Role name already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a new custom role (Super Admin only)",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/api/v1/roles/{id}": {
+      "get": {
+        "operationId": "RolesController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get a role by ID (authenticated)",
+        "tags": [
+          "roles"
+        ]
+      },
+      "patch": {
+        "operationId": "RolesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cannot rename system role"
+          },
+          "404": {
+            "description": "Role not found"
+          },
+          "409": {
+            "description": "Role name already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Update a role name/description (Super Admin only)",
+        "tags": [
+          "roles"
+        ]
+      },
+      "delete": {
+        "operationId": "RolesController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Role deleted"
+          },
+          "403": {
+            "description": "Cannot delete system role"
+          },
+          "404": {
+            "description": "Role not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Delete a custom role (Super Admin only)",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/api/v1/permissions": {
+      "get": {
+        "operationId": "PermissionsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all permissions in the platform catalog (Super Admin only)",
+        "tags": [
+          "permissions"
+        ]
+      },
+      "post": {
+        "operationId": "PermissionsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePermissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Permission created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Permission with same action+subject already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Create a new permission in the catalog (Super Admin only)",
+        "tags": [
+          "permissions"
+        ]
+      }
+    },
+    "/api/v1/permissions/{id}": {
+      "get": {
+        "operationId": "PermissionsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Permission not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Get a permission by ID (Super Admin only)",
+        "tags": [
+          "permissions"
+        ]
+      },
+      "delete": {
+        "operationId": "PermissionsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Permission deleted"
+          },
+          "404": {
+            "description": "Permission not found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Delete a permission from the catalog (Super Admin only)",
+        "tags": [
+          "permissions"
+        ]
+      }
+    },
+    "/api/v1/role-permissions": {
+      "get": {
+        "operationId": "RolePermissionsController_findAll_v1",
+        "parameters": [
+          {
+            "name": "roleId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by role ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of role-permission assignments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolePermissionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "List all role-permission assignments for the current tenant (Tenant Admin + Super Admin)",
+        "tags": [
+          "role-permissions"
+        ]
+      },
+      "post": {
+        "operationId": "RolePermissionsController_assign_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignPermissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Permission assigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RolePermissionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role or permission not found"
+          },
+          "409": {
+            "description": "Permission already assigned to this role in this tenant"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Assign a permission to a role in the current tenant (Tenant Admin + Super Admin)",
+        "tags": [
+          "role-permissions"
+        ]
+      }
+    },
+    "/api/v1/role-permissions/{id}": {
+      "delete": {
+        "operationId": "RolePermissionsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Assignment removed"
+          },
+          "404": {
+            "description": "Assignment not found or does not belong to this tenant"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "summary": "Remove a role-permission assignment from the current tenant (Tenant Admin + Super Admin)",
+        "tags": [
+          "role-permissions"
+        ]
+      }
+    },
+    "/api/v1/users": {
       "get": {
         "operationId": "UsersController_findAll_v1",
         "parameters": [
@@ -494,16 +1436,6 @@
             }
           },
           {
-            "name": "roleId",
-            "required": false,
-            "in": "query",
-            "description": "Filter by role UUID",
-            "schema": {
-              "example": "role-uuid",
-              "type": "string"
-            }
-          },
-          {
             "name": "isActive",
             "required": false,
             "in": "query",
@@ -524,7 +1456,7 @@
             "JWT": []
           }
         ],
-        "summary": "List users in the tenant (Tenant Admin only)",
+        "summary": "List all users globally (Super Admin only)",
         "tags": [
           "users"
         ]
@@ -563,7 +1495,7 @@
             "JWT": []
           }
         ],
-        "summary": "Get user by ID (Tenant Admin or self)",
+        "summary": "Get user by ID (Super Admin or self)",
         "tags": [
           "users"
         ]
@@ -610,7 +1542,7 @@
             "JWT": []
           }
         ],
-        "summary": "Update user profile (Tenant Admin or self)",
+        "summary": "Update user profile (Super Admin or self)",
         "tags": [
           "users"
         ]
@@ -640,89 +1572,7 @@
             "JWT": []
           }
         ],
-        "summary": "Deactivate user (soft delete, Tenant Admin only)",
-        "tags": [
-          "users"
-        ]
-      }
-    },
-    "/api/v1/users/{id}/roles": {
-      "post": {
-        "operationId": "UsersController_assignRole_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssignRoleDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Role assigned"
-          },
-          "409": {
-            "description": "User already has this role"
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ],
-        "summary": "Assign a role to a user (Tenant Admin only)",
-        "tags": [
-          "users"
-        ]
-      }
-    },
-    "/api/v1/users/{id}/roles/{roleId}": {
-      "delete": {
-        "operationId": "UsersController_removeRole_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "roleId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Role removed"
-          },
-          "404": {
-            "description": "User does not have this role"
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ],
-        "summary": "Remove a role from a user (Tenant Admin only)",
+        "summary": "Deactivate user globally (Super Admin only)",
         "tags": [
           "users"
         ]
@@ -1862,18 +2712,9 @@
     },
     "/api/v1/enrollments": {
       "post": {
+        "description": "Students self-enroll (body: courseId only). Tenant Admins and Instructors grant access to a specific user (body: courseId + userId). The caller role from the JWT determines which path is taken.",
         "operationId": "EnrollmentsController_enroll_v1",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateEnrollmentDto"
-              }
-            }
-          }
-        },
         "responses": {
           "201": {
             "description": "Enrollment created",
@@ -1897,7 +2738,7 @@
             "JWT": []
           }
         ],
-        "summary": "Enroll in a course (students only)",
+        "summary": "Enroll in a course or grant access to another user",
         "tags": [
           "enrollments"
         ]
@@ -1927,7 +2768,7 @@
             "JWT": []
           }
         ],
-        "summary": "List all enrollments for the current user",
+        "summary": "List all enrollments for the current user (filtered by tenant if in tenant context)",
         "tags": [
           "enrollments"
         ]
@@ -2176,7 +3017,7 @@
         "properties": {
           "email": {
             "type": "string",
-            "example": "student@demo.pandalang.com",
+            "example": "jane.doe@example.com",
             "description": "User email address"
           },
           "password": {
@@ -2194,19 +3035,13 @@
             "type": "string",
             "example": "Doe",
             "maxLength": 100
-          },
-          "tenantSlug": {
-            "type": "string",
-            "example": "demo",
-            "description": "Slug of the tenant to register under"
           }
         },
         "required": [
           "email",
           "password",
           "firstName",
-          "lastName",
-          "tenantSlug"
+          "lastName"
         ]
       },
       "AuthUserDto": {
@@ -2218,7 +3053,7 @@
           },
           "email": {
             "type": "string",
-            "example": "student@demo.pandalang.com"
+            "example": "jane.doe@example.com"
           },
           "firstName": {
             "type": "string",
@@ -2228,18 +3063,9 @@
             "type": "string",
             "example": "Doe"
           },
-          "tenantId": {
-            "type": "string",
-            "example": "tenant-uuid"
-          },
-          "roles": {
-            "example": [
-              "STUDENT"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "isSuperAdmin": {
+            "type": "boolean",
+            "example": false
           },
           "isActive": {
             "type": "boolean",
@@ -2251,29 +3077,61 @@
           "email",
           "firstName",
           "lastName",
-          "tenantId",
-          "roles",
+          "isSuperAdmin",
           "isActive"
         ]
       },
-      "AuthResponseDto": {
+      "UserTenantDto": {
         "type": "object",
         "properties": {
-          "accessToken": {
+          "tenantId": {
             "type": "string",
-            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            "example": "tenant-uuid"
           },
-          "refreshToken": {
+          "tenantName": {
             "type": "string",
-            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            "example": "Acme Corp"
           },
-          "user": {
-            "$ref": "#/components/schemas/AuthUserDto"
+          "tenantSlug": {
+            "type": "string",
+            "example": "acme"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "INSTRUCTOR"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "role-uuid"
+          },
+          "status": {
+            "type": "string",
+            "example": "ACTIVE"
           }
         },
         "required": [
-          "accessToken",
-          "refreshToken",
+          "tenantId",
+          "tenantName",
+          "tenantSlug",
+          "roleName",
+          "roleId",
+          "status"
+        ]
+      },
+      "CookieAuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AuthUserDto"
+          },
+          "tenants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserTenantDto"
+            }
+          }
+        },
+        "required": [
           "user"
         ]
       },
@@ -2282,51 +3140,80 @@
         "properties": {
           "email": {
             "type": "string",
-            "example": "student@demo.pandalang.com"
+            "example": "student@pandalang.com"
           },
           "password": {
             "type": "string",
             "example": "Password123!"
-          },
-          "tenantSlug": {
-            "type": "string",
-            "example": "demo",
-            "description": "Tenant slug"
           }
         },
         "required": [
           "email",
-          "password",
-          "tenantSlug"
+          "password"
         ]
       },
-      "RefreshTokenDto": {
+      "SwitchTenantDto": {
         "type": "object",
         "properties": {
-          "refreshToken": {
+          "tenantId": {
             "type": "string",
-            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            "example": "tenant-uuid",
+            "description": "ID of the tenant to switch to"
           }
         },
         "required": [
-          "refreshToken"
+          "tenantId"
         ]
       },
-      "TokensResponseDto": {
+      "CookieSwitchTenantResponseDto": {
         "type": "object",
         "properties": {
-          "accessToken": {
+          "tenantId": {
             "type": "string",
-            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            "example": "tenant-uuid"
           },
-          "refreshToken": {
+          "tenantSlug": {
             "type": "string",
-            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            "example": "acme"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "INSTRUCTOR"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "role-uuid"
           }
         },
         "required": [
-          "accessToken",
-          "refreshToken"
+          "tenantId",
+          "tenantSlug",
+          "roleName",
+          "roleId"
+        ]
+      },
+      "CookieRefreshResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "LogoutResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
         ]
       },
       "CreateTenantDto": {
@@ -2382,6 +3269,11 @@
             "example": "acme.pandalang.com",
             "nullable": true
           },
+          "ownerId": {
+            "type": "string",
+            "example": "uuid-of-owner",
+            "description": "User ID of the tenant owner"
+          },
           "settings": {
             "type": "object",
             "example": {
@@ -2413,6 +3305,7 @@
           "id",
           "name",
           "slug",
+          "ownerId",
           "settings",
           "status",
           "createdAt",
@@ -2458,57 +3351,455 @@
           "status"
         ]
       },
-      "CreateUserDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "instructor@demo.pandalang.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "Password123!",
-            "minLength": 8
-          },
-          "firstName": {
-            "type": "string",
-            "example": "John",
-            "maxLength": 100
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Smith",
-            "maxLength": 100
-          },
-          "roleId": {
-            "type": "string",
-            "example": "role-uuid",
-            "description": "UUID of the role to assign"
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "firstName",
-          "lastName",
-          "roleId"
-        ]
-      },
-      "RoleDto": {
+      "MemberUserDto": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "example": "role-uuid"
+            "example": "uuid-here"
           },
-          "name": {
+          "email": {
             "type": "string",
-            "example": "INSTRUCTOR"
+            "example": "alice@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Alice"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Smith"
           }
         },
         "required": [
           "id",
+          "email",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "MemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "userId": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "tenantId": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "TENANT_ADMIN"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED"
+            ],
+            "example": "ACTIVE"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MemberUserDto"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "tenantId",
+          "roleId",
+          "roleName",
+          "status",
+          "joinedAt"
+        ]
+      },
+      "ChangeRoleDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "string",
+            "example": "uuid-of-role",
+            "description": "FK to Role table — the new role to assign to the member"
+          }
+        },
+        "required": [
+          "roleId"
+        ]
+      },
+      "CreateInvitationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "alice@example.com",
+            "description": "Email address of the person to invite"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "Role ID (FK to Role table) to assign upon acceptance"
+          }
+        },
+        "required": [
+          "email",
+          "roleId"
+        ]
+      },
+      "InvitationTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Acme Corp"
+          },
+          "slug": {
+            "type": "string",
+            "example": "acme-corp"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "InvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "tenantId": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "email": {
+            "type": "string",
+            "example": "alice@example.com"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "STUDENT"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "EXPIRED",
+              "CANCELLED"
+            ],
+            "example": "PENDING"
+          },
+          "invitedBy": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "User ID of the inviter"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-01T00:00:00.000Z"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-22T00:00:00.000Z"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/InvitationTenantDto"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "email",
+          "roleId",
+          "roleName",
+          "status",
+          "invitedBy",
+          "expiresAt",
+          "createdAt"
+        ]
+      },
+      "AcceptInvitationDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "abc123token",
+            "description": "Invitation token from the invitation link"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "RoleResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "name": {
+            "type": "string",
+            "example": "CONTENT_MANAGER"
+          },
+          "description": {
+            "type": "object",
+            "example": "Can manage course content but not users"
+          },
+          "isSystem": {
+            "type": "boolean",
+            "example": false,
+            "description": "System roles cannot be renamed or deleted"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isSystem",
+          "createdAt"
+        ]
+      },
+      "CreateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "CONTENT_MANAGER",
+            "description": "Unique role name (platform-wide)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Can manage course content but not users"
+          }
+        },
+        "required": [
           "name"
+        ]
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "CONTENT_MANAGER",
+            "description": "New role name (must be unique)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Can manage course content but not users"
+          }
+        }
+      },
+      "PermissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-here"
+          },
+          "action": {
+            "type": "string",
+            "example": "read",
+            "description": "CASL action"
+          },
+          "subject": {
+            "type": "string",
+            "example": "Course",
+            "description": "CASL subject"
+          },
+          "conditions": {
+            "type": "object",
+            "example": {
+              "tenantId": "${tenantId}"
+            },
+            "description": "Optional ABAC conditions JSON",
+            "nullable": true
+          },
+          "inverted": {
+            "type": "boolean",
+            "example": false,
+            "description": "If true, this is a deny rule"
+          },
+          "reason": {
+            "type": "object",
+            "example": "Students cannot delete courses",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "subject",
+          "inverted"
+        ]
+      },
+      "CreatePermissionDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "example": "read",
+            "description": "CASL action (e.g. read, create, update, delete, manage)"
+          },
+          "subject": {
+            "type": "string",
+            "example": "Course",
+            "description": "CASL subject (e.g. Course, TenantMember, all)"
+          },
+          "conditions": {
+            "type": "object",
+            "example": {
+              "tenantId": "${tenantId}"
+            },
+            "description": "Optional ABAC conditions JSON. Use ${user.id} for user-scoped conditions."
+          },
+          "inverted": {
+            "type": "boolean",
+            "example": false,
+            "description": "If true, this is a \"cannot\" rule (deny). Defaults to false."
+          },
+          "reason": {
+            "type": "string",
+            "example": "Students cannot delete courses",
+            "description": "Human-readable reason for this permission rule."
+          }
+        },
+        "required": [
+          "action",
+          "subject"
+        ]
+      },
+      "RolePermissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "RolePermission record ID"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "Role ID"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "TENANT_ADMIN",
+            "description": "Role name"
+          },
+          "permissionId": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "Permission ID"
+          },
+          "action": {
+            "type": "string",
+            "example": "read",
+            "description": "CASL action from the permission"
+          },
+          "subject": {
+            "type": "string",
+            "example": "Course",
+            "description": "CASL subject from the permission"
+          },
+          "tenantId": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "Tenant ID this assignment belongs to"
+          }
+        },
+        "required": [
+          "id",
+          "roleId",
+          "roleName",
+          "permissionId",
+          "action",
+          "subject",
+          "tenantId"
+        ]
+      },
+      "AssignPermissionDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "Role ID (FK to roles table)"
+          },
+          "permissionId": {
+            "type": "string",
+            "example": "uuid-here",
+            "description": "Permission ID (FK to permissions table)"
+          }
+        },
+        "required": [
+          "roleId",
+          "permissionId"
+        ]
+      },
+      "UserTenantSummaryDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "example": "tenant-uuid"
+          },
+          "tenantName": {
+            "type": "string",
+            "example": "Acme Corp"
+          },
+          "tenantSlug": {
+            "type": "string",
+            "example": "acme"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "INSTRUCTOR"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "role-uuid"
+          },
+          "status": {
+            "type": "string",
+            "example": "ACTIVE"
+          }
+        },
+        "required": [
+          "tenantId",
+          "tenantName",
+          "tenantSlug",
+          "roleName",
+          "roleId",
+          "status"
         ]
       },
       "UserResponseDto": {
@@ -2517,10 +3808,6 @@
           "id": {
             "type": "string",
             "example": "user-uuid"
-          },
-          "tenantId": {
-            "type": "string",
-            "example": "tenant-uuid"
           },
           "email": {
             "type": "string",
@@ -2543,6 +3830,11 @@
             "type": "boolean",
             "example": true
           },
+          "isSuperAdmin": {
+            "type": "boolean",
+            "example": false,
+            "description": "True if this user is a platform super admin"
+          },
           "lastLoginAt": {
             "type": "object",
             "example": "2026-01-01T00:00:00.000Z",
@@ -2558,23 +3850,24 @@
             "type": "string",
             "example": "2026-01-01T00:00:00.000Z"
           },
-          "roles": {
+          "tenants": {
+            "description": "Tenants the user is a member of (with role info)",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RoleDto"
+              "$ref": "#/components/schemas/UserTenantSummaryDto"
             }
           }
         },
         "required": [
           "id",
-          "tenantId",
           "email",
           "firstName",
           "lastName",
           "isActive",
+          "isSuperAdmin",
           "createdAt",
           "updatedAt",
-          "roles"
+          "tenants"
         ]
       },
       "UpdateUserDto": {
@@ -2596,19 +3889,6 @@
             "maxLength": 500
           }
         }
-      },
-      "AssignRoleDto": {
-        "type": "object",
-        "properties": {
-          "roleId": {
-            "type": "string",
-            "example": "role-uuid",
-            "description": "UUID of the role to assign"
-          }
-        },
-        "required": [
-          "roleId"
-        ]
       },
       "CreateCourseDto": {
         "type": "object",
@@ -3247,19 +4527,6 @@
           "title"
         ]
       },
-      "CreateEnrollmentDto": {
-        "type": "object",
-        "properties": {
-          "courseId": {
-            "type": "string",
-            "example": "course-uuid",
-            "description": "UUID of the course to enroll in"
-          }
-        },
-        "required": [
-          "courseId"
-        ]
-      },
       "EnrollmentCourseDto": {
         "type": "object",
         "properties": {
@@ -3356,6 +4623,12 @@
             "type": "object",
             "example": "2026-01-15T00:00:00.000Z",
             "nullable": true
+          },
+          "grantedBy": {
+            "type": "object",
+            "example": "grantor-uuid",
+            "nullable": true,
+            "description": "User ID who granted access (null for self-enrollment)"
           },
           "course": {
             "$ref": "#/components/schemas/EnrollmentCourseDto"

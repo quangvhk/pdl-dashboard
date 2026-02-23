@@ -7,6 +7,7 @@ export interface Tenant {
   domain: string | null
   settings: Record<string, unknown>
   status: TenantStatus
+  ownerId: string
   createdAt: string
   updatedAt: string
 }

@@ -72,11 +72,11 @@ interface PageProps {
 export default function CourseEditPage({ params }: PageProps) {
   const { courseId } = use(params)
   const router = useRouter()
-  const user = useAuthStore((s) => s.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
 
-  const roles = user?.roles ?? []
   const canEdit =
-    roles.includes('INSTRUCTOR') || roles.includes('TENANT_ADMIN') || roles.includes('SUPER_ADMIN')
+    isSuperAdmin || currentRole === 'INSTRUCTOR' || currentRole === 'TENANT_ADMIN'
 
   const { data: course, isLoading, error: fetchError } = useCourse(courseId)
 

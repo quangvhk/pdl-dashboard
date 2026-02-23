@@ -74,13 +74,15 @@ const navigation: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const user = useAuthStore((state) => state.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
   const { sidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
 
-  const userRoles = user?.roles ?? []
-
-  const visibleNavItems = navigation.filter((item) =>
-    item.roles.some((role) => userRoles.includes(role)),
-  )
+  const visibleNavItems = navigation.filter((item) => {
+    if (isSuperAdmin) return true
+    if (!currentRole) return false
+    return item.roles.includes(currentRole)
+  })
 
   return (
     <TooltipProvider delayDuration={0}>

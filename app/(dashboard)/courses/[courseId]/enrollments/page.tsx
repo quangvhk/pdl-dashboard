@@ -112,17 +112,17 @@ export default function CourseEnrollmentsPage({
 }) {
   const { courseId } = use(params)
   const router = useRouter()
-  const user = useAuthStore((s) => s.user)
 
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
   // Role gate — only Instructor, Admin, SuperAdmin
-  const roles = user?.roles ?? []
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
   const canView =
-    roles.includes('INSTRUCTOR') ||
-    roles.includes('TENANT_ADMIN') ||
-    roles.includes('SUPER_ADMIN')
+    isSuperAdmin ||
+    currentRole === 'INSTRUCTOR' ||
+    currentRole === 'TENANT_ADMIN'
 
   const { data: course, isLoading: courseLoading } = useCourse(courseId)
   const {

@@ -470,6 +470,8 @@ function SuperAdminDashboard() {
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
 
   if (!user) {
     return (
@@ -479,21 +481,20 @@ export default function DashboardPage() {
     )
   }
 
-  const roles = user.roles ?? []
   const firstName = user.firstName
 
-  if (roles.includes('SUPER_ADMIN')) {
+  if (isSuperAdmin) {
     return <SuperAdminDashboard />
   }
 
-  if (roles.includes('TENANT_ADMIN')) {
+  if (currentRole === 'TENANT_ADMIN') {
     return <TenantAdminDashboard tenantName={undefined} />
   }
 
-  if (roles.includes('INSTRUCTOR')) {
+  if (currentRole === 'INSTRUCTOR') {
     return <InstructorDashboard firstName={firstName} />
   }
 
-  // Default: STUDENT
+  // Default: STUDENT or no tenant selected
   return <StudentDashboard firstName={firstName} />
 }

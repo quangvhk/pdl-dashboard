@@ -10,13 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function NewCoursePage() {
   const router = useRouter()
-  const user = useAuthStore((s) => s.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
 
-  const roles = user?.roles ?? []
   const canCreate =
-    roles.includes('INSTRUCTOR') ||
-    roles.includes('TENANT_ADMIN') ||
-    roles.includes('SUPER_ADMIN')
+    isSuperAdmin ||
+    currentRole === 'INSTRUCTOR' ||
+    currentRole === 'TENANT_ADMIN'
 
   // Role gate — students cannot access this page
   if (!canCreate) {

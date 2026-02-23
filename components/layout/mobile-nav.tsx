@@ -67,13 +67,15 @@ const navigation: NavItem[] = [
 export function MobileNav() {
   const pathname = usePathname()
   const user = useAuthStore((state) => state.user)
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
   const { sidebarOpen, setSidebarOpen } = useUIStore()
 
-  const userRoles = user?.roles ?? []
-
-  const visibleNavItems = navigation.filter((item) =>
-    item.roles.some((role) => userRoles.includes(role)),
-  )
+  const visibleNavItems = navigation.filter((item) => {
+    if (isSuperAdmin) return true
+    if (!currentRole) return false
+    return item.roles.includes(currentRole)
+  })
 
   return (
     <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>

@@ -3,16 +3,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { UserCircle, CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { DataTable, DataTableColumn } from '@/components/shared/data-table'
 import { Pagination } from '@/components/shared/pagination'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUsers } from '@/features/users/hooks/use-users'
 import { RoleBadge } from './role-badge'
@@ -21,14 +14,6 @@ import type { User } from '@/types'
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 20
-
-const ROLE_FILTER_OPTIONS = [
-  { value: 'ALL', label: 'All Roles' },
-  { value: 'SUPER_ADMIN', label: 'Super Admin' },
-  { value: 'TENANT_ADMIN', label: 'Admin' },
-  { value: 'INSTRUCTOR', label: 'Instructor' },
-  { value: 'STUDENT', label: 'Student' },
-]
 
 // ─── Column definitions ────────────────────────────────────────────────────────
 
@@ -59,19 +44,18 @@ const columns: DataTableColumn<User>[] = [
     },
   },
   {
-    key: 'roles',
-    header: 'Roles',
+    key: 'tenants',
+    header: 'Tenants',
     className: 'hidden sm:table-cell',
     cell: (row) => {
-      if (!row.roles || row.roles.length === 0) {
-        return <span className="text-muted-foreground text-sm">No roles</span>
+      if (row.isSuperAdmin) {
+        return <RoleBadge role="SUPER_ADMIN" />
+      }
+      if (!row.tenants || row.tenants.length === 0) {
+        return <span className="text-muted-foreground text-sm">No memberships</span>
       }
       return (
-        <div className="flex flex-wrap gap-1">
-          {row.roles.map((role) => (
-            <RoleBadge key={role.id} role={role.name} />
-          ))}
-        </div>
+        <span className="text-sm">{row.tenants.length} tenant{row.tenants.length !== 1 ? 's' : ''}</span>
       )
     },
   },
@@ -123,12 +107,10 @@ const columns: DataTableColumn<User>[] = [
 
 export function UserTable() {
   const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState('ALL')
   const [page, setPage] = useState(1)
 
   const { data: users = [], isLoading, isError } = useUsers({
     search: search || undefined,
-    role: roleFilter !== 'ALL' ? roleFilter : undefined,
     page,
     limit: PAGE_SIZE,
   })
@@ -139,28 +121,6 @@ export function UserTable() {
 
   return (
     <div className="space-y-4">
-      {/* Role filter toolbar */}
-      <div className="flex items-center gap-3">
-        <Select
-          value={roleFilter}
-          onValueChange={(val) => {
-            setRoleFilter(val)
-            setPage(1)
-          }}
-        >
-          <SelectTrigger className="w-full sm:w-[160px]">
-            <UserCircle className="mr-2 h-4 w-4 shrink-0" />
-            <SelectValue placeholder="Filter by role" />
-          </SelectTrigger>
-          <SelectContent>
-            {ROLE_FILTER_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       {/* Error banner */}
       {isError && (

@@ -11,9 +11,7 @@ import { TenantForm } from '@/features/tenants/components/tenant-form'
 
 export default function NewTenantPage() {
   const router = useRouter()
-  const user = useAuthStore((s) => s.user)
-  const roles = user?.roles ?? []
-  const isSuperAdmin = roles.includes('SUPER_ADMIN')
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
 
   // ── Role gate ─────────────────────────────────────────────────────────────────
   if (!isSuperAdmin) {

@@ -376,7 +376,7 @@ export function LessonViewer({ courseId, sectionId, lessonId }: LessonViewerProp
     updateProgress.mutate(
       {
         enrollmentId: enrollment.id,
-        data: { lessonId, completed: true },
+        data: { lessonId, isCompleted: true },
       },
       {
         onSuccess: () => {

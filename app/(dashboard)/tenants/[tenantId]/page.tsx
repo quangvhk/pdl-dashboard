@@ -14,9 +14,7 @@ interface TenantDetailPageProps {
 
 export default function TenantDetailPage({ params }: TenantDetailPageProps) {
   const { tenantId } = use(params)
-  const user = useAuthStore((s) => s.user)
-  const roles = user?.roles ?? []
-  const isSuperAdmin = roles.includes('SUPER_ADMIN')
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
 
   // ── Role gate ─────────────────────────────────────────────────────────────────
   if (!isSuperAdmin) {

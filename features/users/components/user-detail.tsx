@@ -14,13 +14,11 @@ import {
   Clock,
   ShieldCheck,
   ShieldOff,
-  Plus,
-  X,
+  Building2,
 } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateUserSchema, type UpdateUserFormValues } from '@/features/users/schemas/user.schema'
 import { useUser } from '@/features/users/hooks/use-user'
-import { useAssignRole, useRemoveRole } from '@/features/users/hooks/use-assign-role'
 import { usersQueryKeys } from '@/features/users/hooks/use-users'
 import { usersService } from '@/lib/api/services/users.service'
 import { RoleBadge } from './role-badge'
@@ -30,6 +28,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,21 +40,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
-// ─── Constants ─────────────────────────────────────────────────────────────────
-
-const ASSIGNABLE_ROLES = [
-  { value: 'STUDENT', label: 'Student' },
-  { value: 'INSTRUCTOR', label: 'Instructor' },
-  { value: 'TENANT_ADMIN', label: 'Admin' },
-]
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
@@ -65,7 +49,6 @@ interface UserDetailProps {
 
 export function UserDetail({ userId }: UserDetailProps) {
   const queryClient = useQueryClient()
-  const [assignRoleValue, setAssignRoleValue] = useState('')
   const [updateError, setUpdateError] = useState<string | null>(null)
 
   const { data: user, isLoading, isError } = useUser(userId)
@@ -110,9 +93,6 @@ export function UserDetail({ userId }: UserDetailProps) {
     },
   })
 
-  const { mutate: assignRole, isPending: isAssigning } = useAssignRole(userId)
-  const { mutate: removeRole, isPending: isRemoving } = useRemoveRole(userId)
-
   const {
     register,
     handleSubmit,
@@ -151,16 +131,6 @@ export function UserDetail({ userId }: UserDetailProps) {
 
   const initials = `${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase()
 
-  const handleAssignRole = () => {
-    if (!assignRoleValue) return
-    assignRole(
-      { roleId: assignRoleValue },
-      {
-        onSuccess: () => setAssignRoleValue(''),
-      },
-    )
-  }
-
   const onSubmit = (data: UpdateUserFormValues) => {
     updateMutation.mutate(data)
   }
@@ -191,11 +161,11 @@ export function UserDetail({ userId }: UserDetailProps) {
                 {user.email}
               </div>
               <div className="flex flex-wrap gap-1 pt-1">
-                {user.roles.map((role) => (
-                  <RoleBadge key={role.id} role={role.name} />
-                ))}
-                {user.roles.length === 0 && (
-                  <span className="text-muted-foreground text-xs">No roles assigned</span>
+                {user.isSuperAdmin && (
+                  <Badge variant="destructive" className="text-xs">Super Admin</Badge>
+                )}
+                {user.tenants.length === 0 && !user.isSuperAdmin && (
+                  <span className="text-muted-foreground text-xs">No tenant memberships</span>
                 )}
               </div>
             </div>
@@ -239,6 +209,39 @@ export function UserDetail({ userId }: UserDetailProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tenant memberships */}
+      {user.tenants.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Tenant Memberships
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {user.tenants.map((t) => (
+                <div key={t.tenantId} className="flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <p className="text-sm font-medium">{t.tenantName}</p>
+                    <p className="text-muted-foreground text-xs">{t.tenantSlug}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RoleBadge role={t.roleName} />
+                    <Badge
+                      variant={t.status === 'ACTIVE' ? 'default' : 'secondary'}
+                      className="text-xs"
+                    >
+                      {t.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit profile form */}
       <Card>
@@ -314,73 +317,6 @@ export function UserDetail({ userId }: UserDetailProps) {
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
-
-      {/* Role management */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Role Management</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Current roles */}
-          <div>
-            <p className="text-muted-foreground mb-2 text-sm">Current Roles</p>
-            {user.roles.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No roles assigned.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {user.roles.map((role) => (
-                  <div key={role.id} className="flex items-center gap-1">
-                    <RoleBadge role={role.name} />
-                    <button
-                      type="button"
-                      onClick={() => removeRole(role.id)}
-                      disabled={isRemoving}
-                      className="text-muted-foreground hover:text-destructive ml-0.5 rounded-full p-0.5 transition-colors"
-                      aria-label={`Remove ${role.name} role`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* Assign role */}
-          <div>
-            <p className="text-muted-foreground mb-2 text-sm">Assign Role</p>
-            <div className="flex items-center gap-2">
-              <Select value={assignRoleValue} onValueChange={setAssignRoleValue}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select a role…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ASSIGNABLE_ROLES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleAssignRole}
-                disabled={!assignRoleValue || isAssigning}
-              >
-                {isAssigning ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Plus className="mr-2 h-4 w-4" />
-                )}
-                Assign
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
 

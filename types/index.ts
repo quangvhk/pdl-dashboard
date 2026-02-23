@@ -6,8 +6,11 @@ export type {
 } from './api'
 
 export type {
+  UserTenant,
   AuthUser,
   AuthResponse,
+  SwitchTenantRequest,
+  SwitchTenantResponse,
   RefreshResponse,
   LogoutResponse,
   LoginRequest,
@@ -23,11 +26,9 @@ export type {
 } from './tenant'
 
 export type {
-  Role,
+  UserTenantSummary,
   User,
-  CreateUserRequest,
   UpdateUserRequest,
-  AssignRoleRequest,
 } from './user'
 
 export type {
@@ -51,6 +52,7 @@ export type {
   EnrollmentUser,
   Enrollment,
   CreateEnrollmentRequest,
+  GrantEnrollmentRequest,
   UpdateProgressRequest,
 } from './enrollment'
 
@@ -67,3 +69,32 @@ export type {
   CreateQuestionRequest,
   UpdateQuestionRequest,
 } from './quiz'
+
+export type {
+  MemberStatus,
+  MemberUser,
+  Member,
+  ChangeRoleRequest,
+  ListMembersParams,
+} from './member'
+
+export type {
+  InvitationStatus,
+  InvitationTenant,
+  Invitation,
+  CreateInvitationRequest,
+  AcceptInvitationRequest,
+} from './invitation'
+
+export type {
+  PlatformRole,
+  CreateRoleRequest,
+  UpdateRoleRequest,
+} from './role'
+
+export type {
+  Permission,
+  CreatePermissionRequest,
+  RolePermission,
+  AssignPermissionRequest,
+} from './permission'

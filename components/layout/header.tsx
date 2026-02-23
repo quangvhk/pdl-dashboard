@@ -38,7 +38,7 @@ export function Header() {
     ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email
     : ''
 
-  const primaryRole = user?.roles?.[0] ?? ''
+  const primaryRole = useAuthStore((s) => s.currentRole) ?? ''
 
   return (
     <header className="bg-card border-border flex h-16 shrink-0 items-center gap-4 border-b px-4">

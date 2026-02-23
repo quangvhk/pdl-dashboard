@@ -21,7 +21,6 @@ import {
 import { updateUserSchema, type UpdateUserFormValues } from '@/features/users/schemas/user.schema'
 import { usersService } from '@/lib/api/services/users.service'
 import { useAuthStore } from '@/stores/auth.store'
-import { useTenantStore } from '@/stores/tenant.store'
 import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -76,7 +75,12 @@ function ThemeOption({ value, label, icon, current, onClick }: ThemeOptionProps)
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore()
-  const { tenantName } = useTenantStore()
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin)
+  const currentRole = useAuthStore((s) => s.currentRole)
+  const currentTenant = useAuthStore((s) =>
+    s.tenants.find((t) => t.tenantId === s.currentTenantId),
+  )
+  const tenantName = currentTenant?.tenantName ?? null
   const { theme, setTheme } = useTheme()
   const [updateError, setUpdateError] = useState<string | null>(null)
   const [updateSuccess, setUpdateSuccess] = useState(false)
@@ -327,16 +331,14 @@ export default function SettingsPage() {
               <Shield className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
               <div>
                 <p className="text-muted-foreground mb-1 text-xs">Role</p>
-                {user?.roles && user.roles.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {user.roles.map((role) => (
-                      <Badge key={role} variant="secondary" className="text-xs">
-                        {formatRole(role)}
-                      </Badge>
-                    ))}
-                  </div>
+                {isSuperAdmin ? (
+                  <Badge variant="destructive" className="text-xs">Super Admin</Badge>
+                ) : currentRole ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {formatRole(currentRole)}
+                  </Badge>
                 ) : (
-                  <span className="text-muted-foreground text-sm">No roles</span>
+                  <span className="text-muted-foreground text-sm">No tenant selected</span>
                 )}
               </div>
             </div>

@@ -24,6 +24,7 @@ export interface Enrollment {
   progressPercent: number
   enrolledAt: string
   completedAt: string | null
+  grantedBy: string | null
   course?: EnrollmentCourse
   user?: EnrollmentUser
 }
@@ -32,7 +33,13 @@ export interface CreateEnrollmentRequest {
   courseId: string
 }
 
+export interface GrantEnrollmentRequest {
+  courseId: string
+  userId: string
+}
+
 export interface UpdateProgressRequest {
   lessonId: string
-  completed: boolean
+  isCompleted: boolean
+  timeSpentSeconds?: number
 }

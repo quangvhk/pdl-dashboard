@@ -14,12 +14,16 @@ import {
   CheckCircle2,
   PauseCircle,
   FlaskConical,
+  UserCircle2,
+  ArrowRightLeft,
 } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateTenantSchema, type UpdateTenantFormValues } from '@/features/tenants/schemas/tenant.schema'
 import { useTenant } from '@/features/tenants/hooks/use-tenant'
 import { tenantsQueryKeys } from '@/features/tenants/hooks/use-tenants'
+import { useTransferOwnership } from '@/features/tenants/hooks/use-transfer-ownership'
 import { tenantsService } from '@/lib/api/services/tenants.service'
+import { useAuthStore, selectIsSuperAdmin } from '@/stores/auth.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,6 +41,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import type { TenantStatus } from '@/types'
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -70,8 +83,15 @@ interface TenantDetailProps {
 export function TenantDetail({ tenantId }: TenantDetailProps) {
   const queryClient = useQueryClient()
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false)
+  const [newOwnerIdInput, setNewOwnerIdInput] = useState('')
+
+  const isSuperAdmin = useAuthStore(selectIsSuperAdmin)
+  const currentUserId = useAuthStore((s) => s.user?.id)
 
   const { data: tenant, isLoading, isError } = useTenant(tenantId)
+
+  const transferOwnership = useTransferOwnership()
 
   // Update tenant mutation
   const updateMutation = useMutation({
@@ -157,6 +177,23 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
     updateMutation.mutate(data)
   }
 
+  // Super Admin or the current owner can transfer ownership
+  const canTransferOwnership = isSuperAdmin || currentUserId === tenant.ownerId
+
+  const handleTransferOwnership = () => {
+    const trimmed = newOwnerIdInput.trim()
+    if (!trimmed) return
+    transferOwnership.mutate(
+      { tenantId, newOwnerId: trimmed },
+      {
+        onSuccess: () => {
+          setTransferDialogOpen(false)
+          setNewOwnerIdInput('')
+        },
+      },
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Tenant overview card */}
@@ -182,7 +219,7 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
           <Separator />
 
           {/* Meta grid */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="flex items-center gap-2 text-sm">
               <Building2 className="text-muted-foreground h-4 w-4 shrink-0" />
               <div>
@@ -195,6 +232,13 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
               <div>
                 <p className="text-muted-foreground text-xs">Domain</p>
                 <p className="font-medium">{tenant.domain ?? '—'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <UserCircle2 className="text-muted-foreground h-4 w-4 shrink-0" />
+              <div>
+                <p className="text-muted-foreground text-xs">Owner ID</p>
+                <code className="bg-muted rounded px-1.5 py-0.5 text-xs">{tenant.ownerId}</code>
               </div>
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -394,6 +438,91 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
           </form>
         </CardContent>
       </Card>
+
+      {/* Transfer Ownership — visible to Super Admin or current owner */}
+      {canTransferOwnership && (
+        <Card className="border-amber-200 dark:border-amber-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+              <ArrowRightLeft className="h-5 w-5" />
+              Transfer Ownership
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-muted-foreground text-sm">
+              Transfer ownership of <strong>{tenant.name}</strong> to another user. The new owner
+              will have full control over this tenant. This action cannot be undone without the new
+              owner's cooperation.
+            </p>
+            <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Current owner ID:{' '}
+              <code className="bg-amber-100 dark:bg-amber-900/50 rounded px-1.5 py-0.5 text-xs font-mono">
+                {tenant.ownerId}
+              </code>
+            </div>
+
+            <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30">
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  Transfer Ownership
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Transfer Ownership</DialogTitle>
+                  <DialogDescription>
+                    Enter the user ID of the new owner for <strong>{tenant.name}</strong>. The new
+                    owner must already be a member of this tenant.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-3 py-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-owner-id">New Owner User ID</Label>
+                    <Input
+                      id="new-owner-id"
+                      type="text"
+                      placeholder="Enter user ID…"
+                      value={newOwnerIdInput}
+                      onChange={(e) => setNewOwnerIdInput(e.target.value)}
+                    />
+                  </div>
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+                    ⚠️ This action will immediately transfer ownership. You may lose admin access
+                    to this tenant if you are not a Super Admin.
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setTransferDialogOpen(false)
+                      setNewOwnerIdInput('')
+                    }}
+                    disabled={transferOwnership.isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={handleTransferOwnership}
+                    disabled={!newOwnerIdInput.trim() || transferOwnership.isPending}
+                    className="bg-amber-600 text-white hover:bg-amber-700"
+                  >
+                    {transferOwnership.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {transferOwnership.isPending ? 'Transferring…' : 'Confirm Transfer'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

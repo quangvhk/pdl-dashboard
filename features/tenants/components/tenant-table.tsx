@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { Building2 } from 'lucide-react'
+import { Building2, UserCircle2 } from 'lucide-react'
 import { DataTable, DataTableColumn } from '@/components/shared/data-table'
 import { Pagination } from '@/components/shared/pagination'
 import { Badge } from '@/components/ui/badge'
@@ -60,6 +60,17 @@ const columns: DataTableColumn<Tenant>[] = [
       ),
   },
   {
+    key: 'ownerId',
+    header: 'Owner',
+    className: 'hidden lg:table-cell',
+    cell: (row) => (
+      <div className="flex items-center gap-1.5 text-sm">
+        <UserCircle2 className="text-muted-foreground h-4 w-4 shrink-0" />
+        <code className="bg-muted rounded px-1.5 py-0.5 text-xs">{row.ownerId}</code>
+      </div>
+    ),
+  },
+  {
     key: 'status',
     header: 'Status',
     sortable: true,
@@ -71,7 +82,7 @@ const columns: DataTableColumn<Tenant>[] = [
     key: 'createdAt',
     header: 'Created',
     sortable: true,
-    className: 'hidden lg:table-cell',
+    className: 'hidden xl:table-cell',
     cell: (row) => (
       <span className="text-muted-foreground text-sm">
         {format(new Date(row.createdAt), 'MMM d, yyyy')}

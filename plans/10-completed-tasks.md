@@ -383,3 +383,19 @@ Simplified user management for V2: removed tenant-scoped user creation and role 
 - `features/users/components/role-badge.tsx` — Already works with single role string; no changes needed
 - `features/users/schemas/user.schema.ts` — Already V2: only `updateUserSchema`; `createUserSchema` removed in FE-1.1
 
+---
+
+## FE-5.2: Update Tenants Feature for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Added `ownerId` display and transfer ownership functionality to the tenants feature. The tenant table now shows an Owner column (displays the owner's user ID). The tenant detail view shows the owner ID in the meta grid and includes a Transfer Ownership card visible to Super Admins and the current owner. The transfer dialog accepts a new owner user ID and calls `POST /tenants/:id/transfer-ownership` via the new `useTransferOwnership` mutation hook.
+
+### Files Created
+- `features/tenants/hooks/use-transfer-ownership.ts` — `useTransferOwnership` mutation hook; calls `tenantsService.transferOwnership()`; updates detail cache + invalidates list; shows "Ownership transferred" toast
+
+### Files Modified
+- `features/tenants/components/tenant-table.tsx` — Added Owner column (shows `ownerId` with `UserCircle2` icon); moved Created column to `hidden xl:table-cell` to accommodate new column
+- `features/tenants/components/tenant-detail.tsx` — Added `ownerId` to meta grid (4-column layout); added Transfer Ownership card (amber-bordered, visible to Super Admin or current owner); Transfer Ownership dialog with new owner user ID input + confirmation warning; imported `useTransferOwnership`, `selectIsSuperAdmin`, `Dialog`/`DialogContent`/`DialogDescription`/`DialogFooter`/`DialogHeader`/`DialogTitle`/`DialogTrigger`, `UserCircle2`, `ArrowRightLeft`
+

@@ -260,3 +260,27 @@ Updated Next.js middleware to use the V2 httpOnly cookie-based auth model. Repla
 ### Files Modified
 - `middleware.ts` — Replaced `hasAccessToken || hasRefreshToken` check with `hasAuthStatus` (`auth-status` cookie); added `/invitations/accept` to `PUBLIC_ROUTES`; updated comments to explain V2 cookie strategy
 
+---
+
+## FE-4.1: Create Members Feature Module
+
+**Completed:** 2026-02-23
+
+### Summary
+Built the full tenant member management UI. Includes query/mutation hooks with React Query, a Zod schema for the change-role form, a paginated member table with search + status filter + per-row actions dropdown, a member detail view with role/status management, a change-role dialog that fetches available roles from `GET /roles`, and the members list + detail pages with loading skeletons. All pages are role-gated to `TENANT_ADMIN` + `SUPER_ADMIN` and require an active tenant context.
+
+### Files Created
+- `features/members/hooks/use-members.ts` — `membersQueryKeys` factory + `useMembers` query hook with `ListMembersParams` (search, status, pagination)
+- `features/members/hooks/use-member.ts` — Single member query using `membersQueryKeys.detail`
+- `features/members/hooks/use-change-role.ts` — `useChangeRole` mutation; updates detail cache + invalidates list; shows "Role updated" toast
+- `features/members/hooks/use-suspend-member.ts` — `useSuspendMember` + `useActivateMember` mutations; updates detail cache + invalidates list; shows "Member suspended" / "Member activated" toasts
+- `features/members/hooks/use-remove-member.ts` — `useRemoveMember` mutation; removes detail cache entry + invalidates list; shows "Member removed" toast
+- `features/members/schemas/member.schema.ts` — `changeRoleSchema` (Zod) + `ChangeRoleFormValues` type
+- `features/members/components/member-table.tsx` — Paginated table with search, status filter (All/Active/Suspended), columns: Member (avatar + name + email), Role badge, Status badge, Joined date, Actions dropdown (Change Role, Suspend/Activate, Remove with confirmation dialog); row click navigates to detail page
+- `features/members/components/member-detail.tsx` — Detail view: profile card (avatar, name, email, role badge, status badge, joined date), actions card (Change Role, Suspend/Activate buttons), danger zone (Remove with confirmation dialog + redirect to `/members` on success)
+- `features/members/components/change-role-dialog.tsx` — Dialog with role `<Select>` populated from `GET /roles`; pre-selects current role; Save disabled when role unchanged; calls `useChangeRole` mutation
+- `app/(dashboard)/members/page.tsx` — Members list page; role-gated to `TENANT_ADMIN` + `SUPER_ADMIN`; shows "Select a tenant" message when no `currentTenantId`; "Invite Member" button links to `/invitations/new`
+- `app/(dashboard)/members/[memberId]/page.tsx` — Member detail page; role-gated to `TENANT_ADMIN` + `SUPER_ADMIN`; back button to `/members`
+- `app/(dashboard)/members/loading.tsx` — Loading skeleton: header, search + filter toolbar, table skeleton
+- `app/(dashboard)/members/[memberId]/loading.tsx` — Loading skeleton: header, profile card, actions card
+

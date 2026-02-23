@@ -284,3 +284,26 @@ Built the full tenant member management UI. Includes query/mutation hooks with R
 - `app/(dashboard)/members/loading.tsx` — Loading skeleton: header, search + filter toolbar, table skeleton
 - `app/(dashboard)/members/[memberId]/loading.tsx` — Loading skeleton: header, profile card, actions card
 
+---
+
+## FE-4.2: Create Invitations Feature Module
+
+**Completed:** 2026-02-23
+
+### Summary
+Built the full invitation management UI. Includes query/mutation hooks with React Query, a Zod schema for the create invitation form, a paginated invitation table with email search + cancel action, a create invitation form that fetches available roles (Instructors restricted to STUDENT role only), a public accept-invitation page that auto-accepts via URL token, and the invitations list + new invitation pages with loading skeleton. The public acceptance page lives in the `(auth)` layout group so it renders without the dashboard shell. All dashboard pages are role-gated and require an active tenant context.
+
+### Files Created
+- `features/invitations/hooks/use-invitations.ts` — `invitationsQueryKeys` factory + `useInvitations` query hook
+- `features/invitations/hooks/use-create-invitation.ts` — `useCreateInvitation` mutation; invalidates list; shows "Invitation sent to [email]" toast
+- `features/invitations/hooks/use-cancel-invitation.ts` — `useCancelInvitation` mutation; invalidates list; shows "Invitation cancelled" toast
+- `features/invitations/hooks/use-accept-invitation.ts` — `useAcceptInvitation` mutation; invalidates list; shows "Invitation accepted!" toast
+- `features/invitations/schemas/invitation.schema.ts` — `createInvitationSchema` (email + roleId) + `acceptInvitationSchema` (token) with Zod; exports `CreateInvitationFormValues` and `AcceptInvitationFormValues`
+- `features/invitations/components/invitation-table.tsx` — Table with controlled email search, columns: Email, Role badge, Status badge, Invited By, Expires (with overdue highlight), Actions (Cancel button with confirmation dialog for PENDING only)
+- `features/invitations/components/create-invitation-form.tsx` — Card form with email input + role select (fetches from `GET /roles`); Instructors restricted to STUDENT role; Cancel navigates back; redirects to `/invitations` on success
+- `features/invitations/components/accept-invitation-page.tsx` — Public component that auto-accepts invitation from `?token=` URL param; shows loading/success/error states with appropriate CTAs
+- `app/(dashboard)/invitations/page.tsx` — Invitations list page; role-gated to `TENANT_ADMIN` + `SUPER_ADMIN`; shows "Select a tenant" message when no `currentTenantId`; "Invite Member" button shown to TENANT_ADMIN + INSTRUCTOR + SUPER_ADMIN
+- `app/(dashboard)/invitations/new/page.tsx` — Create invitation page; role-gated to `TENANT_ADMIN` + `INSTRUCTOR` + `SUPER_ADMIN`; back button to `/invitations`
+- `app/(auth)/invitations/accept/page.tsx` — Public invitation acceptance page in auth layout group; wraps `AcceptInvitationPage` in `<Suspense>` for `useSearchParams`
+- `app/(dashboard)/invitations/loading.tsx` — Loading skeleton: header, search toolbar, table skeleton
+

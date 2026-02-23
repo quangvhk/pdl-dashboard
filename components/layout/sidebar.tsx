@@ -250,7 +250,11 @@ export function Sidebar() {
 
         {/* Collapse toggle */}
         <Separator />
-        <div className="flex items-center justify-end p-2">
+        <div
+          className={`flex items-center p-2 ${
+            sidebarCollapsed ? 'justify-center' : 'justify-end'
+          }`}
+        >
           <Button
             variant="ghost"
             size="icon"

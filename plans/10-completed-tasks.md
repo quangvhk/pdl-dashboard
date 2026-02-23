@@ -131,3 +131,15 @@ Updated existing service files and created four new service files to match the V
 - `lib/api/services/roles.service.ts` — `list()`, `getById()`, `create(CreateRoleRequest)`, `update(UpdateRoleRequest)`, `remove()`
 - `lib/api/services/permissions.service.ts` — `list()`, `getById()`, `create(CreatePermissionRequest)`, `remove()`; plus role-permission methods: `listRolePermissions()`, `assignPermission(AssignPermissionRequest)`, `removeRolePermission()`
 
+---
+
+## FE-1.6: Update Auth Initializer for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Rewrote the auth initializer to support cookie-based session restoration for the V2 multi-tenant auth model. The new flow: (1) calls `authService.refresh()` with no body — the httpOnly cookie is sent automatically; (2) if refresh succeeds, calls `authService.getMe()` to refresh the user object; (3) if `currentTenantId` is persisted in sessionStorage and still present in the tenants list, re-issues the tenant-scoped JWT via `authService.switchTenant()` and syncs the tenant store; (4) if the persisted tenant is no longer valid or refresh fails, clears all auth state. Initialization is guarded by `isInitialized` to run only once on mount.
+
+### Files Modified
+- `components/providers/auth-initializer.tsx` — Replaced `getMe()`-only flow with full V2 restore sequence: `refresh()` → `getMe()` → optional `switchTenant()` → sync tenant store; removed unused `login`/`setTenants`/`selectCurrentTenant` imports; dependency array changed from `[pathname]` to `[isInitialized]`
+

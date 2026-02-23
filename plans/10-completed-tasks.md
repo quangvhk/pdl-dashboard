@@ -99,3 +99,15 @@ Simplified tenant store to be a thin sync layer for the current tenant context. 
 ### Files Modified
 - `stores/tenant.store.ts` — Added `setFromAuthStore(tenantId, tenantSlug, tenantName)` action; kept `setTenant()` and `clearTenant()`; removed no-op computed properties; store remains persisted to sessionStorage
 
+---
+
+## FE-1.4: Update API Endpoints for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Updated `lib/api/endpoints.ts` to match the V2 multi-tenant backend API. Added new endpoint groups for `members`, `invitations`, `roles`, `permissions`, and `rolePermissions`. Added `switchTenant` to `auth` and `transferOwnership` to `tenants`. Removed deprecated `users.create`, `users.assignRole`, and `users.removeRole` endpoints (replaced by Members + Invitations modules).
+
+### Files Modified
+- `lib/api/endpoints.ts` — Added `auth.switchTenant`; added `tenants.transferOwnership`; removed `users.create`, `users.assignRole`, `users.removeRole`; added full `members`, `invitations`, `roles`, `permissions`, `rolePermissions` endpoint groups
+

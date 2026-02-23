@@ -111,7 +111,7 @@ export function RoleForm({ role }: RoleFormProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-1">
+          <div className="flex flex-wrap gap-3 pt-1">
             <Button
               type="button"
               variant="outline"

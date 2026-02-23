@@ -180,7 +180,7 @@ export function MemberDetail({ memberId }: MemberDetailProps) {
           <CardTitle className="text-destructive">Danger Zone</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium">Remove Member</p>
               <p className="text-muted-foreground text-sm">

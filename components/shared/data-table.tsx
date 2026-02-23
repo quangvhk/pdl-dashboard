@@ -148,7 +148,7 @@ export function DataTable<TRow>({
       {(searchable || toolbar) && (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           {searchable && (
-            <div className="relative max-w-xs flex-1">
+            <div className="relative w-full flex-1 sm:max-w-xs">
               <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder={searchPlaceholder}

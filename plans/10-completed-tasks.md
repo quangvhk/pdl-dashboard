@@ -516,3 +516,28 @@ Verified that all mutation hooks already include success and error toast notific
 - `features/permissions/hooks/use-assign-permission.ts` — "Permission assigned" toast
 - `features/permissions/hooks/use-remove-role-permission.ts` — "Permission removed" toast
 
+---
+
+## FE-7.3: Update Responsive Design for New Pages
+
+**Completed:** 2026-02-23
+
+### Summary
+Audited all new pages and components for mobile responsiveness. Fixed six issues across five files. All new pages now work correctly on mobile viewports.
+
+### Files Modified
+- `components/shared/data-table.tsx` — Search input changed from `max-w-xs flex-1` to `w-full flex-1 sm:max-w-xs` so it expands to full width on mobile instead of being capped at 320px
+- `features/members/components/member-table.tsx` — Status filter `<Select>` changed from `w-36` to `w-full sm:w-36` so it fills the toolbar row on mobile
+- `features/members/components/member-detail.tsx` — Danger zone action row changed from `flex items-center justify-between gap-4` to `flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between` to prevent overflow on narrow screens
+- `features/permissions/components/role-permission-table.tsx` — Subject column given `hidden sm:table-cell` class so the table does not overflow on very small screens (Role + Action remain always visible)
+- `features/invitations/components/create-invitation-form.tsx` — Form action buttons changed from `flex gap-3` to `flex flex-wrap gap-3` to allow wrapping on narrow screens
+- `features/roles/components/role-form.tsx` — Form action buttons changed from `flex gap-3` to `flex flex-wrap gap-3` to allow wrapping on narrow screens
+- `features/invitations/components/accept-invitation-page.tsx` — Both `CardContent` button groups changed from `flex gap-3` to `flex flex-wrap gap-3` to allow wrapping on narrow screens
+
+### Files Verified (no changes needed)
+- `features/invitations/components/invitation-table.tsx` — Already has `hidden md:table-cell` (Invited By) and `hidden lg:table-cell` (Expires); responsive
+- `features/roles/components/role-table.tsx` — Already has `hidden md:table-cell` (Description) and `hidden lg:table-cell` (Created); responsive
+- `features/permissions/components/permission-table.tsx` — Already has `hidden sm:table-cell` (Type), `hidden md:table-cell` (Reason), `hidden lg:table-cell` (Conditions); responsive
+- `features/auth/components/tenant-switcher.tsx` — Role badge already has `hidden sm:inline-flex`; trigger has `max-w-[220px] truncate`; responsive
+- `components/shared/data-table.tsx` toolbar — Already uses `flex-col gap-2 sm:flex-row sm:items-center` for vertical stacking on mobile
+

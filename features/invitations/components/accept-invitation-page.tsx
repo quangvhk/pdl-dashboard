@@ -77,7 +77,7 @@ export function AcceptInvitationPage() {
             You have successfully joined the tenant. You can now sign in to access your account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-3">
+        <CardContent className="flex flex-wrap gap-3">
           <Button onClick={() => router.push('/dashboard')}>
             Go to Dashboard
           </Button>
@@ -105,7 +105,7 @@ export function AcceptInvitationPage() {
           </CardTitle>
           <CardDescription>{errorMessage}</CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-3">
+        <CardContent className="flex flex-wrap gap-3">
           <Button
             variant="outline"
             onClick={() => acceptMutation.mutate({ token })}

@@ -126,6 +126,7 @@ export function RolePermissionTable({ roleId }: RolePermissionTableProps) {
       key: 'subject',
       header: 'Subject',
       sortable: true,
+      className: 'hidden sm:table-cell',
       cell: (row) => (
         <span className="font-mono text-sm">{row.subject}</span>
       ),

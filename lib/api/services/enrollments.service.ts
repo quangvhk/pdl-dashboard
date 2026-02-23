@@ -1,6 +1,8 @@
 /**
- * Enrollments Service — Task 2.3
+ * Enrollments Service — FE-1.5 V2 Update
  * Typed service functions for enrollment endpoints.
+ * Supports dual enrollment model: self-enroll (CreateEnrollmentRequest)
+ * and admin-granted (GrantEnrollmentRequest).
  */
 
 import { apiClient } from '../client'
@@ -8,15 +10,22 @@ import { ENDPOINTS } from '../endpoints'
 import type {
   Enrollment,
   CreateEnrollmentRequest,
+  GrantEnrollmentRequest,
   UpdateProgressRequest,
   PaginationParams,
 } from '@/types'
 
 export const enrollmentsService = {
   /**
-   * Enroll the current user in a course.
+   * Self-enroll the current user in a course.
    */
   create: (data: CreateEnrollmentRequest): Promise<Enrollment> =>
+    apiClient.post<Enrollment>(ENDPOINTS.enrollments.create, data),
+
+  /**
+   * Grant course access to a specific user (admin/instructor only).
+   */
+  grantEnrollment: (data: GrantEnrollmentRequest): Promise<Enrollment> =>
     apiClient.post<Enrollment>(ENDPOINTS.enrollments.create, data),
 
   /**
@@ -36,6 +45,7 @@ export const enrollmentsService = {
 
   /**
    * Update lesson completion progress for an enrollment.
+   * Uses V2 field names: isCompleted (was: completed), timeSpentSeconds (new).
    */
   updateProgress: (id: string, data: UpdateProgressRequest): Promise<Enrollment> =>
     apiClient.patch<Enrollment>(ENDPOINTS.enrollments.updateProgress(id), data),

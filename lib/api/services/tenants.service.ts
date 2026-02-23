@@ -1,5 +1,5 @@
 /**
- * Tenants Service — Task 2.3
+ * Tenants Service — FE-1.5 V2 Update
  * Typed service functions for tenant management endpoints.
  */
 
@@ -46,4 +46,10 @@ export const tenantsService = {
    */
   updateStatus: (id: string, data: UpdateTenantStatusRequest): Promise<Tenant> =>
     apiClient.patch<Tenant>(ENDPOINTS.tenants.updateStatus(id), data),
+
+  /**
+   * Transfer tenant ownership to another user (Super Admin or current owner only).
+   */
+  transferOwnership: (id: string, data: { newOwnerId: string }): Promise<Tenant> =>
+    apiClient.post<Tenant>(ENDPOINTS.tenants.transferOwnership(id), data),
 }

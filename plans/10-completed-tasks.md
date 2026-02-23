@@ -111,3 +111,23 @@ Updated `lib/api/endpoints.ts` to match the V2 multi-tenant backend API. Added n
 ### Files Modified
 - `lib/api/endpoints.ts` — Added `auth.switchTenant`; added `tenants.transferOwnership`; removed `users.create`, `users.assignRole`, `users.removeRole`; added full `members`, `invitations`, `roles`, `permissions`, `rolePermissions` endpoint groups
 
+---
+
+## FE-1.5: Update API Service Functions for V2
+
+**Completed:** 2026-02-23
+
+### Summary
+Updated existing service files and created four new service files to match the V2 multi-tenant backend API. Auth service now supports `switchTenant()`. Tenants service adds `transferOwnership()`. Enrollments service adds `grantEnrollment()` for admin-granted access and uses V2 field names (`isCompleted`, `timeSpentSeconds`) in `updateProgress()`. Four new services cover Members, Invitations, Roles, and Permissions (including role-permission assignments).
+
+### Files Modified
+- `lib/api/services/auth.service.ts` — Added `switchTenant(SwitchTenantRequest): Promise<SwitchTenantResponse>`; updated JSDoc to reflect cookie-based auth; imported `SwitchTenantRequest`, `SwitchTenantResponse`
+- `lib/api/services/tenants.service.ts` — Added `transferOwnership(id, { newOwnerId }): Promise<Tenant>`
+- `lib/api/services/enrollments.service.ts` — Added `grantEnrollment(GrantEnrollmentRequest)` for admin-granted enrollment; updated `updateProgress()` JSDoc to note V2 field names (`isCompleted`, `timeSpentSeconds`); imported `GrantEnrollmentRequest`
+
+### Files Created
+- `lib/api/services/members.service.ts` — `list(ListMembersParams)`, `getById()`, `changeRole()`, `suspend()`, `activate()`, `remove()`
+- `lib/api/services/invitations.service.ts` — `list()`, `create(CreateInvitationRequest)`, `cancel()`, `accept(AcceptInvitationRequest)`
+- `lib/api/services/roles.service.ts` — `list()`, `getById()`, `create(CreateRoleRequest)`, `update(UpdateRoleRequest)`, `remove()`
+- `lib/api/services/permissions.service.ts` — `list()`, `getById()`, `create(CreatePermissionRequest)`, `remove()`; plus role-permission methods: `listRolePermissions()`, `assignPermission(AssignPermissionRequest)`, `removeRolePermission()`
+
